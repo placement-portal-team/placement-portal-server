@@ -1,3 +1,28 @@
+## How Sujith's route calls GeminiService (Week 3)
+
+```js
+const geminiService = require('../services/geminiService');
+
+// Inside the POST /api/v1/ai/prepare route handler:
+const result = await geminiService.generatePrep({
+  role: application.role,         // from the Application document
+  company: application.companyName,
+  jobDescription: req.body.jdText, // from request body
+  skills: req.user.skills          // from the User document
+});
+
+// result shape:
+// {
+//   technicalQuestions: [...],
+//   hrQuestions: [...],
+//   studyRoadmap: { week1: [...], week2: [...] },
+//   promptVersion: "v1.1",
+//   generatedAt: Date
+// }
+```
+
+
+
 # AI Agent JSON Schemas (v1.1)
 
 These are the exact JSON structures returned by each Gemini agent.

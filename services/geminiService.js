@@ -22,19 +22,20 @@ class GeminiService {
   }
 
   // Call Gemini with retry logic (2 retries, exponential backoff)
-  async _callWithRetry(prompt, retries = 2) {
-    for (let attempt = 0; attempt <= retries; attempt++) {
-      try {
-        const result = await this.model.generateContent(prompt);
-        const text = result.response.text();
-        return this._parseJSON(text);
-      } catch (err) {
-        if (attempt === retries) throw err;
-        const delay = Math.pow(2, attempt) * 1000; // 1s, 2s
-        await new Promise(res => setTimeout(res, delay));
-      }
+  async _callWithRetry(prompt, type, retries = 2) {
+  for (let attempt = 0; attempt <= retries; attempt++) {
+    try {
+      const result = await this.model.generateContent(prompt);
+      const parsed = this._parseJSON(result.response.text());
+      this._validateSchema(parsed, type);
+      return parsed;
+    } catch (err) {
+      if (attempt === retries) throw err;
+      const delay = Math.pow(2, attempt) * 1000;
+      await new Promise(res => setTimeout(res, delay));
     }
   }
+}
 
   // Fallback content if Gemini fails after all retries
   _fallbackContent(type) {
@@ -47,6 +48,29 @@ class GeminiService {
     return { roadmap: { week1: [{ day: "Day 1-3", topic: "Review job description requirements", resources: ["Official documentation"], priority: "High" }], week2: [{ day: "Day 8-10", topic: "Mock interviews and practice problems", resources: ["LeetCode", "Pramp"], priority: "High" }] } };
   }
 
+  // Validate that parsed JSON has expected shape
+_validateSchema(parsed, type) {
+  if (type === 'technical') {
+    if (!parsed.questions || !Array.isArray(parsed.questions)) {
+      throw new Error('Technical agent: missing questions array');
+    }
+    parsed.questions.forEach(q => {
+      if (!q.question || !q.difficulty) throw new Error('Technical agent: missing required fields');
+    });
+  }
+  if (type === 'hr') {
+    if (!parsed.questions || !Array.isArray(parsed.questions)) {
+      throw new Error('HR agent: missing questions array');
+    }
+  }
+  if (type === 'roadmap') {
+    if (!parsed.roadmap || !parsed.roadmap.week1) {
+      throw new Error('Roadmap agent: missing roadmap.week1');
+    }
+  }
+  return true;
+}
+
   // Main method — call all 3 agents and return combined result
   async generatePrep({ role, company, jobDescription, skills }) {
     if (!role || !company || !jobDescription) {
@@ -55,10 +79,10 @@ class GeminiService {
     const userSkills = skills || [];
 
     const [technical, hr, roadmap] = await Promise.allSettled([
-      this._callWithRetry(technicalPrompt(role, company, jobDescription, userSkills)),
-      this._callWithRetry(hrPrompt(role, company)),
-      this._callWithRetry(roadmapPrompt(role, userSkills, jobDescription))
-    ]);
+  this._callWithRetry(technicalPrompt(role, company, jobDescription, userSkills), 'technical'),
+  this._callWithRetry(hrPrompt(role, company), 'hr'),
+  this._callWithRetry(roadmapPrompt(role, userSkills, jobDescription), 'roadmap')
+]);
 
     return {
       technicalQuestions: technical.status === 'fulfilled' ? technical.value.questions : this._fallbackContent('technical').questions,
