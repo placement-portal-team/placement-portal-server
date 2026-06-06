@@ -1,22 +1,26 @@
 const technicalPrompt = (role, company, jobDescription, skills) => `
-You are a technical interview coach. Generate 8 technical interview questions for:
+You are a technical interview coach. Generate 8 technical interview questions.
+
 Role: ${role}
 Company: ${company}
 Candidate skills: ${skills.join(', ')}
-Job Description summary: ${jobDescription}
+Job Description: ${jobDescription}
 
-Respond ONLY with valid JSON in this exact format:
+Here is an example of the EXACT output format required:
 {
   "questions": [
     {
       "id": 1,
-      "question": "...",
-      "topic": "Data Structures / Algorithms / System Design / etc",
-      "difficulty": "Easy | Medium | Hard",
-      "hint": "One-line hint for the candidate"
+      "question": "Explain the difference between SQL and NoSQL databases.",
+      "topic": "Databases",
+      "difficulty": "Medium",
+      "hint": "Think about structure, scalability, and use cases."
     }
   ]
 }
+
+Now generate 8 questions following this EXACT format.
+Do not write anything before or after the JSON. No explanation. No markdown.
 `;
 
 module.exports = { technicalPrompt };
