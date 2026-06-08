@@ -1,8 +1,9 @@
 const Application=require("../models/applications");
 
+
 const createApplication=async (req,res)=>{
     try{
-        const application=await Application.create(req.body);
+        const application=await Application.create({...req.body,userId:req.user.userId});
 
         res.status(201).json({
             success: true,
@@ -18,7 +19,8 @@ const createApplication=async (req,res)=>{
 }
 const getApplication=async(req,res)=>{
     try{
-        const {userId}=req.query;
+      console.log(req.user);
+        const userId=req.user.userId;
         const applications=await Application.find({userId});
          res.status(200).json({
       success: true,
@@ -27,10 +29,9 @@ const getApplication=async(req,res)=>{
     });
     }
     catch(error){
-         res.status(200).json({
-      success: true,
-      count: applications.length,
-      data: applications,
+      res.status(500).json({
+        success: false,
+        message: error.message
     });
     }
 }
