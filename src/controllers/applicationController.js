@@ -19,7 +19,7 @@ const createApplication=async (req,res)=>{
 }
 const getApplication=async(req,res)=>{
     try{
-      console.log(req.user);
+      
         const userId=req.user.userId;
         const applications=await Application.find({userId});
          res.status(200).json({
@@ -35,6 +35,42 @@ const getApplication=async(req,res)=>{
     });
     }
 }
+
+const getApplicationStats = async (req, res) => {
+    try {
+
+        const applications = await Application.find({
+            userId: req.user.userId
+        });
+
+        const stats = {
+            Applied: 0,
+            "OA Scheduled": 0,
+            "OA Cleared": 0,
+            "Technical Interview": 0,
+            "HR Interview": 0,
+            Offer: 0,
+            Rejected: 0
+        };
+
+        for (const application of applications) {
+            stats[application.currentStage]++;
+        }
+
+        res.status(200).json({
+            success: true,
+            data: stats
+        });
+
+    } catch (error) {
+
+        res.status(500).json({
+            success: false,
+            message: error.message
+        });
+
+    }
+};
 const updateApplicationStage = async (req, res) => {
   try {
     const { id } = req.params;
@@ -69,5 +105,5 @@ const updateApplicationStage = async (req, res) => {
 };
 
 module.exports = {
-    getApplication,createApplication,updateApplicationStage,
+    getApplication,createApplication,updateApplicationStage,getApplicationStats,
 };
