@@ -53,13 +53,34 @@ const getApplicationStats = async (req, res) => {
             Rejected: 0
         };
 
+        const groupedApplications = {
+            Applied: [],
+            "OA Scheduled": [],
+            "OA Cleared": [],
+            "Technical Interview": [],
+            "HR Interview": [],
+            Offer: [],
+            Rejected: []
+        };
+
         for (const application of applications) {
+
             stats[application.currentStage]++;
+
+            groupedApplications[application.currentStage].push({
+                id: application._id,
+                companyName: application.companyName,
+                role: application.role
+            });
         }
 
         res.status(200).json({
             success: true,
-            data: stats
+            data: {
+                summary: stats,
+                totalApplications: applications.length,
+                groupedApplications
+            }
         });
 
     } catch (error) {
@@ -72,38 +93,84 @@ const getApplicationStats = async (req, res) => {
     }
 };
 const updateApplicationStage = async (req, res) => {
-  try {
-    const { id } = req.params;
-    const { currentStage } = req.body;
+    try {
 
-    const application = await Application.findByIdAndUpdate(
-      id,
-      { currentStage },
-      {
-        new: true,
-        runValidators: true,
-      }
-    );
+        const { id } = req.params;
+        const { currentStage } = req.body;
 
-    if (!application) {
-      return res.status(404).json({
-        success: false,
-        message: "Application not found",
-      });
+        const application = await Application.findById(id);
+
+        if (!application) {
+            return res.status(404).json({
+                success: false,
+                message: "Application not found"
+            });
+        }
+
+        if (application.userId !== req.user.userId) {
+            return res.status(403).json({
+                success: false,
+                message: "Not authorized"
+            });
+        }
+
+        application.currentStage = currentStage;
+
+        await application.save();
+
+        res.status(200).json({
+            success: true,
+            data: application
+        });
+
+    } catch (error) {
+
+        res.status(500).json({
+            success: false,
+            message: error.message
+        });
+
     }
+};
 
-    res.status(200).json({
-      success: true,
-      data: application,
-    });
-  } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: error.message,
-    });
-  }
+const deleteApplication = async (req, res) => {
+    try {
+
+        const { id } = req.params;
+
+        const application = await Application.findById(id);
+
+        if (!application) {
+            return res.status(404).json({
+                success: false,
+                message: "Application not found"
+            });
+        }
+
+        if (application.userId !== req.user.userId) {
+            return res.status(403).json({
+                success: false,
+                message: "Not authorized"
+            });
+        }
+
+        await application.deleteOne();
+
+        res.status(200).json({
+            success: true,
+            message: "Application deleted successfully"
+        });
+
+    } catch (error) {
+
+        res.status(500).json({
+            success: false,
+            message: error.message
+        });
+
+    }
 };
 
 module.exports = {
-    getApplication,createApplication,updateApplicationStage,getApplicationStats,
+    getApplication,createApplication,updateApplicationStage,getApplicationStats,deleteApplication,
 };

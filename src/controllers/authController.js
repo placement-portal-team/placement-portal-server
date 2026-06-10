@@ -108,7 +108,86 @@ const loginUser = async (req, res) => {
         });
     }
 };
+const getProfile = async (req, res) => {
+    try {
+
+        const user = await User.findById(req.user.userId);
+
+        if (!user) {
+            return res.status(404).json({
+                success: false,
+                message: "User not found"
+            });
+        }
+
+        res.status(200).json({
+            success: true,
+            data: {
+                id: user._id,
+                name: user.name,
+                email: user.email,
+                college: user.college,
+                branch: user.branch,
+                graduationYear: user.graduationYear,
+                resumeUrl: user.resumeUrl
+            }
+        });
+
+    } catch (error) {
+
+        res.status(500).json({
+            success: false,
+            message: error.message
+        });
+
+    }
+};
+
+const updateProfile = async (req, res) => {
+    try {
+
+        const user = await User.findById(req.user.userId);
+
+        if (!user) {
+            return res.status(404).json({
+                success: false,
+                message: "User not found"
+            });
+        }
+
+        const {name,college,graduationYear,resumeUrl,branch}=req.body;
+        user.name = name || user.name;
+        user.college = college || user.college;
+        user.branch = branch || user.branch;
+        user.graduationYear = graduationYear || user.graduationYear;
+        user.resumeUrl = resumeUrl || user.resumeUrl;
+
+        await user.save();
+
+        res.status(200).json({
+               success: true,
+               message: "Profile updated successfully",
+               data: {
+                   id: user._id,
+                   name: user.name,
+                   email: user.email,
+                   college: user.college,
+                   branch: user.branch,
+                   graduationYear: user.graduationYear,
+                   resumeUrl: user.resumeUrl
+               }
+});
+
+    } catch(error) {
+
+        res.status(500).json({
+            success: false,
+            message: error.message
+        });
+
+    }
+};
 
 module.exports = {
-    registerUser,loginUser,
+    registerUser,loginUser,getProfile,updateProfile
 };
