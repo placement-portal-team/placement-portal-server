@@ -1,8 +1,11 @@
-const hrPrompt = (role, company) => `
-You are an HR interview coach. Generate 6 HR and behavioural questions.
+const hrPrompt = (role, company, resumeText) => `
+You are an HR interview coach. Generate 6 behavioural questions.
 
 Role: ${role}
 Company: ${company}
+Candidate background: ${resumeText ? resumeText.slice(0, 500) : 'Not provided'}
+
+Tailor questions to the candidate's background where possible.
 
 Here is an example of the EXACT output format required:
 {
@@ -11,13 +14,12 @@ Here is an example of the EXACT output format required:
       "id": 1,
       "question": "Tell me about a time you had to meet a tight deadline.",
       "category": "Behavioural",
-      "starTip": "Use the STAR method: describe the Situation, Task, Action you took, and Result."
+      "starTip": "Use STAR: Situation, Task, Action, Result."
     }
   ]
 }
 
-Now generate 6 questions following this EXACT format.
-Do not write anything before or after the JSON. No explanation. No markdown.
+Generate 6 questions. Do not write anything before or after the JSON.
 `;
 
 module.exports = { hrPrompt };
