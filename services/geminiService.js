@@ -109,14 +109,6 @@ _validateSchema(parsed, type) {
   };
 }
 
-    return {
-      technicalQuestions: technical.status === 'fulfilled' ? technical.value.questions : this._fallbackContent('technical').questions,
-      hrQuestions: hr.status === 'fulfilled' ? hr.value.questions : this._fallbackContent('hr').questions,
-      studyRoadmap: roadmap.status === 'fulfilled' ? roadmap.value.roadmap : this._fallbackContent('roadmap').roadmap,
-      promptVersion: PROMPT_VERSION,
-      generatedAt: new Date()
-    };
-  }
 }
 
 module.exports = new GeminiService();
