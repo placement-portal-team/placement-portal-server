@@ -22,7 +22,7 @@ class GeminiService {
   }
 
   // Call Gemini with retry logic (2 retries, exponential backoff)
-  async _callWithRetry(prompt, type, retries = 2) {
+ async _callWithRetry(prompt, type, retries = 2) {
   for (let attempt = 0; attempt <= retries; attempt++) {
     try {
       const result = await this.model.generateContent(prompt);
@@ -30,23 +30,54 @@ class GeminiService {
       this._validateSchema(parsed, type);
       return parsed;
     } catch (err) {
-      if (attempt === retries) throw err;
+      const isLastAttempt = attempt === retries;
+      if (isLastAttempt) {
+        console.error(`[GeminiService] ${type} agent failed after ${retries + 1} attempts:`, err.message);
+        throw err;
+      }
       const delay = Math.pow(2, attempt) * 1000;
+      console.warn(`[GeminiService] ${type} agent attempt ${attempt + 1} failed. Retrying in ${delay}ms...`);
       await new Promise(res => setTimeout(res, delay));
     }
   }
 }
 
   // Fallback content if Gemini fails after all retries
-  _fallbackContent(type) {
-    if (type === 'technical') {
-      return { questions: [{ id: 1, question: "Tell us about your experience with the tech stack mentioned in the JD.", topic: "General", difficulty: "Easy", hint: "Be specific about projects you've worked on." }] };
-    }
-    if (type === 'hr') {
-      return { questions: [{ id: 1, question: "Tell me about yourself.", category: "Behavioural", starTip: "Keep it professional and relevant to the role." }] };
-    }
-    return { roadmap: { week1: [{ day: "Day 1-3", topic: "Review job description requirements", resources: ["Official documentation"], priority: "High" }], week2: [{ day: "Day 8-10", topic: "Mock interviews and practice problems", resources: ["LeetCode", "Pramp"], priority: "High" }] } };
+ _fallbackContent(type) {
+  if (type === 'technical') {
+    return {
+      questions: [
+        { id: 1, question: "Walk me through a technical project you've built from scratch.", topic: "General", difficulty: "Easy", hint: "Focus on your architecture decisions and the challenges you solved." },
+        { id: 2, question: "How would you design a URL shortening service like bit.ly?", topic: "System Design", difficulty: "Medium", hint: "Think about the data model, hashing strategy, and scale." },
+        { id: 3, question: "Explain the difference between SQL and NoSQL databases. When would you choose each?", topic: "Databases", difficulty: "Medium", hint: "Consider structure, scalability, and consistency requirements." }
+      ]
+    };
   }
+  if (type === 'hr') {
+    return {
+      questions: [
+        { id: 1, question: "Tell me about a time you had to debug a difficult problem under pressure.", category: "Behavioural", starTip: "STAR: Describe what the bug was, the deadline, your debugging process, and the outcome." },
+        { id: 2, question: "Describe a situation where you had to learn a new technology quickly.", category: "Situational", starTip: "STAR: What was the technology, why was it urgent, how did you approach learning it, what did you deliver?" },
+        { id: 3, question: "Tell me about a time you disagreed with a teammate's technical decision.", category: "Behavioural", starTip: "Focus on how you communicated respectfully and reached a resolution." }
+      ]
+    };
+  }
+  return {
+    roadmap: {
+      week1: [
+        { day: "Day 1-2", topic: "Review the job description and identify skill gaps", resources: ["Job description analysis", "Company engineering blog"], priority: "High" },
+        { day: "Day 3-4", topic: "Data structures and algorithms practice", resources: ["LeetCode Easy/Medium", "NeetCode roadmap"], priority: "High" },
+        { day: "Day 5-7", topic: "System design fundamentals", resources: ["System Design Primer — GitHub", "Gaurav Sen YouTube"], priority: "High" }
+      ],
+      week2: [
+        { day: "Day 8-9", topic: "Company-specific preparation", resources: ["Glassdoor interview reviews", "company engineering blog"], priority: "High" },
+        { day: "Day 10-11", topic: "Mock interviews", resources: ["Pramp.com", "Interviewing.io"], priority: "High" },
+        { day: "Day 12-14", topic: "Behavioural questions and STAR method", resources: ["Big Interview platform", "LinkedIn Learning"], priority: "Medium" }
+      ]
+    }
+  };
+}
+
 
   // Validate that parsed JSON has expected shape
 _validateSchema(parsed, type) {
