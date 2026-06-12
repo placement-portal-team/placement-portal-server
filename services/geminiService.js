@@ -72,26 +72,43 @@ _validateSchema(parsed, type) {
 }
 
   // Main method — call all 3 agents and return combined result
-  async generatePrep({ role, company, jobDescription, skills }) {
-    if (!role || !company || !jobDescription) {
-      throw new Error('role, company, and jobDescription are required');
-    }
-    const userSkills = skills || [];
-
-    const [technical, hr, roadmap] = await Promise.allSettled([
-  this._callWithRetry(technicalPrompt(role, company, jobDescription, userSkills), 'technical'),
-  this._callWithRetry(hrPrompt(role, company), 'hr'),
-  this._callWithRetry(roadmapPrompt(role, userSkills, jobDescription), 'roadmap')
-]);
-
-    return {
-      technicalQuestions: technical.status === 'fulfilled' ? technical.value.questions : this._fallbackContent('technical').questions,
-      hrQuestions: hr.status === 'fulfilled' ? hr.value.questions : this._fallbackContent('hr').questions,
-      studyRoadmap: roadmap.status === 'fulfilled' ? roadmap.value.roadmap : this._fallbackContent('roadmap').roadmap,
-      promptVersion: PROMPT_VERSION,
-      generatedAt: new Date()
-    };
+async generatePrep({ role, company, jobDescription, skills, resumeText }) {
+  if (!role || !company || !jobDescription) {
+    throw new Error('role, company, and jobDescription are required');
   }
+  const userSkills = skills || [];
+  const resume = resumeText || '';
+
+  const [technical, hr, roadmap] = await Promise.allSettled([
+    this._callWithRetry(
+      technicalPrompt(role, company, jobDescription, userSkills, resume),
+      'technical'
+    ),
+    this._callWithRetry(
+      hrPrompt(role, company, resume),
+      'hr'
+    ),
+    this._callWithRetry(
+      roadmapPrompt(role, userSkills, jobDescription, resume),
+      'roadmap'
+    )
+  ]);
+
+  return {
+    technicalQuestions: technical.status === 'fulfilled'
+      ? technical.value.questions
+      : this._fallbackContent('technical').questions,
+    hrQuestions: hr.status === 'fulfilled'
+      ? hr.value.questions
+      : this._fallbackContent('hr').questions,
+    studyRoadmap: roadmap.status === 'fulfilled'
+      ? roadmap.value.roadmap
+      : this._fallbackContent('roadmap').roadmap,
+    promptVersion: PROMPT_VERSION,
+    generatedAt: new Date()
+  };
+}
+
 }
 
 module.exports = new GeminiService();

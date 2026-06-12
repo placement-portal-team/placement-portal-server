@@ -1,9 +1,12 @@
-const roadmapPrompt = (role, skills, jobDescription) => `
+const roadmapPrompt = (role, skills, jobDescription, resumeText) => `
 You are a technical career coach. Create a 2-week personalised study roadmap.
 
 Role: ${role}
-Candidate's current skills: ${skills.join(', ')}
+Candidate skills: ${skills.join(', ')}
 Job description: ${jobDescription}
+Candidate background: ${resumeText ? resumeText.slice(0, 500) : 'Not provided'}
+
+Focus on gaps between the candidate's current skills and what the job requires.
 
 Here is an example of the EXACT output format required:
 {
@@ -12,7 +15,7 @@ Here is an example of the EXACT output format required:
       {
         "day": "Day 1-2",
         "topic": "Arrays and Strings",
-        "resources": ["LeetCode Easy problems", "GeeksforGeeks Arrays"],
+        "resources": ["LeetCode Easy", "GeeksforGeeks Arrays"],
         "priority": "High"
       }
     ],
@@ -27,8 +30,7 @@ Here is an example of the EXACT output format required:
   }
 }
 
-Now generate a full 2-week roadmap following this EXACT format.
-Do not write anything before or after the JSON. No explanation. No markdown.
+Generate the full 2-week roadmap. Do not write anything before or after the JSON.
 `;
 
 module.exports = { roadmapPrompt };
