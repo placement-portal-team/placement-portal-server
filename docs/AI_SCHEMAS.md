@@ -1,27 +1,27 @@
 ## How Sujith's route calls GeminiService (Week 3)
+## How to call GeminiService from Express (v1.2)
 
-```js
 const geminiService = require('../services/geminiService');
 
-// Inside the POST /api/v1/ai/prepare route handler:
+// Inside POST /api/v1/ai/prepare route:
 const result = await geminiService.generatePrep({
-  role: application.role,         // from the Application document
-  company: application.companyName,
-  jobDescription: req.body.jdText, // from request body
-  skills: req.user.skills          // from the User document
+  role: application.role,           // string — from Application document
+  company: application.companyName, // string — from Application document
+  jobDescription: req.body.jdText,  // string — from request body
+  skills: req.user.skills,          // string[] — from User document
+  resumeText: req.body.resumeText   // string — parsed PDF text (optional, can be '')
 });
 
-// result shape:
+// result is always safe to use — never throws, uses fallback on failure:
 // {
-//   technicalQuestions: [...],
-//   hrQuestions: [...],
-//   studyRoadmap: { week1: [...], week2: [...] },
+//   technicalQuestions: Array,     // from Agent 1 (or fallback)
+//   hrQuestions: Array,            // from Agent 2 (or fallback)
+//   studyRoadmap: { week1, week2 },// from Agent 3 (or fallback)
 //   promptVersion: "v1.2",
 //   generatedAt: Date
 // }
-```
 
-
+// Save to AIPreparation collection, then return to frontend.
 
 # AI Agent JSON Schemas (v1.1)
 
