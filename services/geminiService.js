@@ -22,7 +22,9 @@ class GeminiService {
   }
 
   // Call Gemini with retry logic (2 retries, exponential backoff)
+
 async _callWithRetry(prompt, type, retries = 2) {
+
   for (let attempt = 0; attempt <= retries; attempt++) {
     try {
       const result = await this.model.generateContent(prompt);
@@ -48,7 +50,11 @@ async _callWithRetry(prompt, type, retries = 2) {
 }
 
   // Fallback content if Gemini fails after all retries
+
 _fallbackContent(type) {
+
+
+
   if (type === 'technical') {
     return {
       questions: [
@@ -83,6 +89,7 @@ _fallbackContent(type) {
   };
 }
 
+
   // Validate that parsed JSON has expected shape
 _validateSchema(parsed, type) {
   if (type === 'technical') {
@@ -107,7 +114,9 @@ _validateSchema(parsed, type) {
 }
 
   // Main method — call all 3 agents and return combined result
+
 async generatePrep({ role, company, jobDescription, skills, resumeText }) {
+
   if (!role || !company || !jobDescription) {
     throw new Error('role, company, and jobDescription are required');
   }
