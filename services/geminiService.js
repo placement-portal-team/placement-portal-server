@@ -4,7 +4,7 @@ const { technicalPrompt } = require('../prompts/technicalAgent');
 const { hrPrompt } = require('../prompts/hrAgent');
 const { roadmapPrompt } = require('../prompts/roadmapAgent');
 
-const PROMPT_VERSION = 'v1.1';
+const PROMPT_VERSION = 'v1.2';
 
 class GeminiService {
   constructor() {
@@ -26,6 +26,11 @@ async _callWithRetry(prompt, type, retries = 2) {
   for (let attempt = 0; attempt <= retries; attempt++) {
     try {
       const result = await this.model.generateContent(prompt);
+
+      if (!result?.response?.text) {
+         throw new Error('Invalid Gemini response');
+      }
+
       const parsed = this._parseJSON(result.response.text());
       this._validateSchema(parsed, type);
       return parsed;

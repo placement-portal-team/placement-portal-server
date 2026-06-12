@@ -16,7 +16,7 @@ const result = await geminiService.generatePrep({
 //   technicalQuestions: [...],
 //   hrQuestions: [...],
 //   studyRoadmap: { week1: [...], week2: [...] },
-//   promptVersion: "v1.1",
+//   promptVersion: "v1.2",
 //   generatedAt: Date
 // }
 ```
