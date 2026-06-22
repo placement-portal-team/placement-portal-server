@@ -65,6 +65,46 @@
         }
       },
       "response": []
+    },
+    {
+      "name": "Generate AI Prep",
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"applicationId\": \"{{APPLICATION_ID}}\",\r\n  \"jdText\": \"Build full stack applications using React and Node.js. 1-2 years experience preferred.\",\r\n  \"resumeText\": \"Built a placement portal as a college project using MERN stack. Completed NPTEL courses on DSA.\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:5000/api/ai/prepare",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "5000",
+          "path": [
+            "api",
+            "ai",
+            "prepare"
+          ]
+        }
+      },
+      "response": []
     }
   ]
 }
