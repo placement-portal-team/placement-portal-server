@@ -1,3 +1,99 @@
+## Live API endpoints (as of v1.3)
+
+Base URL (local dev): http://localhost:5000
+
+---
+
+### POST /api/ai/prepare
+
+Generates AI interview preparation for an application.
+
+**Auth:** Required — Bearer token in Authorization header
+
+**Request body:**
+{
+  "applicationId": "string — _id of an existing Application",
+  "jdText": "string — job description text (required)",
+  "resumeText": "string — candidate resume text (optional, improves quality)"
+}
+
+**Response (201):**
+{
+  "success": true,
+  "data": {
+    "_id": "...",
+    "userId": "...",
+    "applicationId": "...",
+    "companyName": "...",
+    "role": "...",
+    "technicalQuestions": [ { "id", "question", "topic", "difficulty", "hint" } ],
+    "hrQuestions": [ { "id", "question", "category", "starTip" } ],
+    "studyRoadmap": { "week1": [...], "week2": [...] },
+    "promptVersion": "v1.3",
+    "generatedAt": "ISO date string"
+  }
+}
+
+**Error cases:**
+- 400 — applicationId or jdText missing
+- 403 — application belongs to a different user
+- 404 — applicationId not found in DB
+
+---
+
+### GET /api/ai/history/:applicationId
+
+Checks if AI prep already exists for an application, and whether it is outdated.
+
+**Auth:** Required — Bearer token in Authorization header
+
+**Response when no prep exists:**
+{ "success": true, "data": { "exists": false } }
+
+**Response when prep exists:**
+{
+  "success": true,
+  "data": {
+    "exists": true,
+    "isStale": true/false,
+    "promptVersion": "v1.2",
+    "result": {
+      "technicalQuestions": [...],
+      "hrQuestions": [...],
+      "studyRoadmap": { "week1": [...], "week2": [...] },
+      "generatedAt": "..."
+    }
+  }
+}
+
+**Frontend logic (for Ladi):**
+- exists === false          → show "Generate AI Prep" button
+- exists && !isStale        → show results directly
+- exists && isStale         → show results + "Regenerate" button
+- "Regenerate" button       → call POST /api/ai/prepare again with same applicationId
+
+---
+
+## Prompt versioning
+
+Current version: v1.3
+
+| Version | What changed |
+|---|---|
+| v1.1 | Few-shot examples added to all 3 prompts |
+| v1.2 | Resume text context injection added |
+| v1.3 | Role-aware technical questions, experience-calibrated roadmap |
+
+geminiService.isStale(savedPromptVersion) returns true if the saved version
+is older than v1.3, meaning the result could be improved by regenerating.
+
+
+
+
+
+
+
+
 ## How Sujith's route calls GeminiService (Week 3)
 ## How to call GeminiService from Express (v1.2)
 

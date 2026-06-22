@@ -4,7 +4,7 @@ const { technicalPrompt } = require('../prompts/technicalAgent');
 const { hrPrompt } = require('../prompts/hrAgent');
 const { roadmapPrompt } = require('../prompts/roadmapAgent');
 
-const PROMPT_VERSION = 'v1.2';
+const PROMPT_VERSION = 'v1.3';
 
 class GeminiService {
   constructor() {
