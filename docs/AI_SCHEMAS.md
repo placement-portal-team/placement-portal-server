@@ -1,3 +1,20 @@
+## Frontend logic for AI prep UI (GET /api/ai/history/:applicationId)
+
+- if data.exists === false -> show "Generate AI Prep" button
+- if data.exists === true && data.isStale === false -> show results directly
+- if data.exists === true && data.isStale === true -> show results +
+  a "Regenerate with latest AI" button
+- "Regenerate" button just calls POST /api/ai/prepare again with the same applicationId
+
+
+
+
+
+
+
+
+
+
 ## Live API endpoints (as of v1.3)
 
 Base URL (local dev): http://localhost:5000

@@ -32,7 +32,7 @@ const aiPreparationSchema = new mongoose.Schema(
     },
     promptVersion: {
       type: String,
-      default: "v1.2",
+      default: "v1.3",
     },
     generatedAt: {
       type: Date,

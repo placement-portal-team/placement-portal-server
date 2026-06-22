@@ -153,6 +153,10 @@ async generatePrep({ role, company, jobDescription, skills, resumeText }) {
   };
 }
 
+isStale(savedPromptVersion) {
+  return savedPromptVersion !== PROMPT_VERSION;
+}
+
 }
 
 module.exports = new GeminiService();

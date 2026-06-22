@@ -5,6 +5,7 @@ const router = express.Router();
 const Application = require("../models/applications");
 const AIPreparation = require("../models/AIPreparation");
 const geminiService = require("../../services/geminiService");
+const geminiServiceInstance = require("../../services/geminiService");
 
 router.post("/prepare", protect, async (req, res) => {
   try {
@@ -65,6 +66,47 @@ router.post("/prepare", protect, async (req, res) => {
       success: false,
       message: "Failed to generate AI preparation",
     });
+  }
+});
+
+
+router.get("/history/:applicationId", protect, async (req, res) => {
+  try {
+    const { applicationId } = req.params;
+
+    const application = await Application.findById(applicationId);
+    if (!application) {
+      return res.status(404).json({ success: false, message: "Application not found" });
+    }
+    if (application.userId.toString() !== req.user.userId.toString()) {
+      return res.status(403).json({ success: false, message: "Not authorized" });
+    }
+
+    const existing = await AIPreparation.findOne({ applicationId }).sort({ createdAt: -1 });
+
+    if (!existing) {
+      return res.json({ success: true, data: { exists: false } });
+    }
+
+    const isStale = geminiServiceInstance.isStale(existing.promptVersion);
+
+    return res.json({
+      success: true,
+      data: {
+        exists: true,
+        isStale,
+        promptVersion: existing.promptVersion,
+        result: {
+          technicalQuestions: existing.technicalQuestions,
+          hrQuestions: existing.hrQuestions,
+          studyRoadmap: existing.studyRoadmap,
+          generatedAt: existing.generatedAt,
+        },
+      },
+    });
+  } catch (error) {
+    console.error("[AI History Error]", error.message);
+    return res.status(500).json({ success: false, message: "Failed to fetch AI history" });
   }
 });
 

@@ -44,7 +44,7 @@ describe('GeminiService', () => {
     expect(result.technicalQuestions).toHaveLength(1);
     expect(result.hrQuestions).toHaveLength(1);
     expect(result.studyRoadmap.week1).toHaveLength(1);
-    expect(result.promptVersion).toBe('v1.2');
+    expect(result.promptVersion).toBe('v1.3');
   });
 
   test('generatePrep uses fallback when one agent fails', async () => {
