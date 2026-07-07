@@ -39,6 +39,28 @@ const applicationSchema = new mongoose.Schema(
       ],
       default: "Applied",
     },
+    statusHistory: [
+  {
+    status: {
+      type: String,
+      required: true,
+      enum: [
+        "Applied",
+        "OA Scheduled",
+        "OA Cleared",
+        "Technical Interview",
+        "HR Interview",
+        "Offered",
+        "Rejected",
+      ],
+    },
+
+    changedAt: {
+      type: Date,
+      default: Date.now,
+    },
+  },
+],
 
     appliedDate: {
       type: Date,

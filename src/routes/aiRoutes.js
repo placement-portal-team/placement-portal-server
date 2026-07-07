@@ -54,6 +54,7 @@ router.post("/prepare", protect, async (req, res) => {
       promptVersion: result.promptVersion,
       generatedAt: result.generatedAt,
     });
+    
 
     return res.status(201).json({
       success: true,

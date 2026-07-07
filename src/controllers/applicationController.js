@@ -1,22 +1,32 @@
 const Application=require("../models/applications");
 
 
-const createApplication=async (req,res)=>{
-    try{
-        const application=await Application.create({...req.body,userId:req.user.userId});
+const createApplication = async (req, res) => {
+    try {
+        const initialStage = req.body.currentStage || "Applied";
+
+        const application = await Application.create({
+            ...req.body,
+            userId: req.user.userId,
+            statusHistory: [
+                {
+                    status: initialStage
+                }
+            ]
+        });
 
         res.status(201).json({
             success: true,
             data: application,
         });
-         } catch (error) {
+
+    } catch (error) {
         res.status(500).json({
             success: false,
             message: error.message,
         });
     }
-
-}
+};
 const getApplication=async(req,res)=>{
     try{
       
@@ -113,11 +123,20 @@ const updateApplicationStage = async (req, res) => {
                 message: "Not authorized"
             });
         }
+        if (application.currentStage === currentStage) {
+    return res.status(400).json({
+        success: false,
+        message: `Application is already at ${currentStage} stage`
+    });
+}
 
-        application.currentStage = currentStage;
+application.currentStage = currentStage;
 
-        await application.save();
+application.statusHistory.push({
+    status: currentStage
+});
 
+await application.save();
         res.status(200).json({
             success: true,
             data: application
