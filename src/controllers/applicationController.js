@@ -144,6 +144,339 @@ const getApplicationStats = async (req, res) => {
 
     }
 };
+const getApplicationAnalytics = async (req, res) => {
+    try {
+        const applications = await Application.find({
+            userId: req.user.userId,
+            deletedAt: null
+        });
+
+        // =========================
+        // OVERVIEW ANALYTICS
+        // =========================
+
+        const totalApplications = applications.length;
+
+        const offers = applications.filter(
+            application =>
+                application.currentStage === "Offered"
+        ).length;
+
+        const rejections = applications.filter(
+            application =>
+                application.currentStage === "Rejected"
+        ).length;
+
+        const activeApplications =
+            totalApplications - offers - rejections;
+
+        const offerRate =
+            totalApplications === 0
+                ? 0
+                : Number(
+                    (
+                        (offers / totalApplications) *
+                        100
+                    ).toFixed(2)
+                );
+
+        const rejectionRate =
+            totalApplications === 0
+                ? 0
+                : Number(
+                    (
+                        (rejections / totalApplications) *
+                        100
+                    ).toFixed(2)
+                );
+
+
+        // =========================
+        // STAGE DISTRIBUTION
+        // =========================
+
+        const stageDistribution = {
+            Applied: 0,
+            "OA Scheduled": 0,
+            "OA Cleared": 0,
+            "Technical Interview": 0,
+            "HR Interview": 0,
+            Offered: 0,
+            Rejected: 0
+        };
+
+
+        // =========================
+        // SOURCE DISTRIBUTION
+        // =========================
+
+        const sourceDistribution = {};
+
+
+        for (const application of applications) {
+
+            if (
+                Object.prototype.hasOwnProperty.call(
+                    stageDistribution,
+                    application.currentStage
+                )
+            ) {
+                stageDistribution[
+                    application.currentStage
+                ]++;
+            }
+
+            const source = application.source;
+
+            if (source) {
+                sourceDistribution[source] =
+                    (
+                        sourceDistribution[source] ||
+                        0
+                    ) + 1;
+            }
+        }
+
+
+        // =========================
+        // MONTHLY APPLICATION TREND
+        // =========================
+
+        const monthlyTrendMap = {};
+
+        for (const application of applications) {
+
+            const date = application.appliedDate;
+
+            if (!date) {
+                continue;
+            }
+
+            const month = date
+                .toISOString()
+                .slice(0, 7);
+
+            monthlyTrendMap[month] =
+                (monthlyTrendMap[month] || 0) + 1;
+        }
+
+        const monthlyApplicationTrend =
+            Object.entries(monthlyTrendMap)
+                .map(
+                    ([month, applications]) => ({
+                        month,
+                        applications
+                    })
+                )
+                .sort((a, b) =>
+                    a.month.localeCompare(b.month)
+                );
+
+
+        // =========================
+        // STAGE CONVERSION ANALYTICS
+        // =========================
+
+        const stageOrder = [
+            "Applied",
+            "OA Scheduled",
+            "OA Cleared",
+            "Technical Interview",
+            "HR Interview",
+            "Offered"
+        ];
+
+        const reachedStage = (
+            application,
+            targetStage
+        ) => {
+
+            const targetIndex =
+                stageOrder.indexOf(targetStage);
+
+            if (targetIndex === -1) {
+                return false;
+            }
+
+            const stagesReached = [
+                application.currentStage,
+                ...(application.statusHistory || [])
+                    .map(
+                        history => history.status
+                    )
+            ];
+
+            return stagesReached.some(stage => {
+
+                const stageIndex =
+                    stageOrder.indexOf(stage);
+
+                return (
+                    stageIndex !== -1 &&
+                    stageIndex >= targetIndex
+                );
+            });
+        };
+
+
+        let reachedOA = 0;
+        let clearedOA = 0;
+        let reachedTechnical = 0;
+        let reachedHR = 0;
+        let reachedOffer = 0;
+
+
+        for (const application of applications) {
+
+            if (
+                reachedStage(
+                    application,
+                    "OA Scheduled"
+                )
+            ) {
+                reachedOA++;
+            }
+
+            if (
+                reachedStage(
+                    application,
+                    "OA Cleared"
+                )
+            ) {
+                clearedOA++;
+            }
+
+            if (
+                reachedStage(
+                    application,
+                    "Technical Interview"
+                )
+            ) {
+                reachedTechnical++;
+            }
+
+            if (
+                reachedStage(
+                    application,
+                    "HR Interview"
+                )
+            ) {
+                reachedHR++;
+            }
+
+            if (
+                reachedStage(
+                    application,
+                    "Offered"
+                )
+            ) {
+                reachedOffer++;
+            }
+        }
+
+
+        // =========================
+        // PERCENTAGE HELPER
+        // =========================
+
+        const calculateRate = (
+            value,
+            total
+        ) => {
+
+            if (total === 0) {
+                return 0;
+            }
+
+            return Number(
+                (
+                    (value / total) *
+                    100
+                ).toFixed(2)
+            );
+        };
+
+
+        // =========================
+        // CONVERSION RATES
+        // =========================
+
+        const conversionRates = {
+
+            appliedToOA: calculateRate(
+                reachedOA,
+                totalApplications
+            ),
+
+            oaScheduledToCleared:
+                calculateRate(
+                    clearedOA,
+                    reachedOA
+                ),
+
+            oaClearedToTechnical:
+                calculateRate(
+                    reachedTechnical,
+                    clearedOA
+                ),
+
+            technicalToHR:
+                calculateRate(
+                    reachedHR,
+                    reachedTechnical
+                ),
+
+            hrToOffer:
+                calculateRate(
+                    reachedOffer,
+                    reachedHR
+                )
+        };
+
+
+        // =========================
+        // RESPONSE
+        // =========================
+
+        return res.status(200).json({
+            success: true,
+
+            data: {
+
+                overview: {
+                    totalApplications,
+                    activeApplications,
+                    offers,
+                    rejections,
+                    offerRate,
+                    rejectionRate
+                },
+
+                stageDistribution,
+
+                sourceDistribution,
+
+                monthlyApplicationTrend,
+
+                conversionRates
+            }
+        });
+
+    } catch (error) {
+
+        console.error(
+            "[Application Analytics Error]",
+            error.message
+        );
+
+        return res.status(500).json({
+            success: false,
+            message:
+                "Failed to fetch application analytics"
+        });
+    }
+};
+
 const updateApplicationStage = async (req, res) => {
     try {
 
@@ -240,5 +573,5 @@ const deleteApplication = async (req, res) => {
 };
 
 module.exports = {
-    getApplication,createApplication,updateApplicationStage,getApplicationStats,deleteApplication,
+    getApplication,createApplication,updateApplicationStage,getApplicationStats,deleteApplication,getApplicationAnalytics,
 };
