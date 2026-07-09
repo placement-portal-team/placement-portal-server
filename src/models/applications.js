@@ -74,6 +74,10 @@ const applicationSchema = new mongoose.Schema(
     notes: {
       type: String,
     },
+    deletedAt: {
+  type: Date,
+  default: null,
+},
   },
   {
     timestamps: true,
