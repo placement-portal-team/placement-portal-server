@@ -8,6 +8,7 @@ const PROMPT_VERSION = 'v1.3';
 
 class GeminiService {
   constructor() {
+    
     if (!process.env.GEMINI_API_KEY) {
       throw new Error('GEMINI_API_KEY is not set in environment variables');
     }

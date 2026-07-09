@@ -1,46 +1,98 @@
 const Application=require("../models/applications");
 
 
-const createApplication=async (req,res)=>{
-    try{
-        const application=await Application.create({...req.body,userId:req.user.userId});
+const createApplication = async (req, res) => {
+    try {
+        const initialStage = req.body.currentStage || "Applied";
+
+        const application = await Application.create({
+            ...req.body,
+            userId: req.user.userId,
+            statusHistory: [
+                {
+                    status: initialStage
+                }
+            ]
+        });
 
         res.status(201).json({
             success: true,
             data: application,
         });
-         } catch (error) {
+
+    } catch (error) {
         res.status(500).json({
             success: false,
             message: error.message,
         });
     }
+};
+const getApplication = async (req, res) => {
+    try {
+        const userId = req.user.userId;
+       const { stage, company, sort, page = 1, limit = 10 } = req.query;
 
-}
-const getApplication=async(req,res)=>{
-    try{
-      
-        const userId=req.user.userId;
-        const applications=await Application.find({userId});
-         res.status(200).json({
-      success: true,
-      count: applications.length,
-      data: applications,
-    });
+      const pageNumber = Number(page);
+      const limitNumber = Number(limit);
+
+      const skip = (pageNumber - 1) * limitNumber;
+
+        const query = {
+            userId,
+            deletedAt: null
+        };
+
+        if (stage) {
+            query.currentStage = stage;
+        }
+
+        if (company) {
+            query.companyName = {
+                $regex: company,
+                $options: "i"
+            };
+        }
+
+        let sortOptions = { appliedDate: -1 };
+
+        if (sort === "oldest") {
+            sortOptions = { appliedDate: 1 };
+        }
+
+        if (sort === "company") {
+            sortOptions = { companyName: 1 };
+        }
+
+       const totalApplications = await Application.countDocuments(query);
+
+       const applications = await Application.find(query)
+           .sort(sortOptions)
+           .skip(skip)
+           .limit(limitNumber);
+
+        const totalPages = Math.ceil(
+            totalApplications / limitNumber
+        );
+
+        res.status(200).json({
+            success: true,
+            count: applications.length,
+            data: applications
+        });
+
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            message: error.message
+        });
     }
-    catch(error){
-      res.status(500).json({
-        success: false,
-        message: error.message
-    });
-    }
-}
+};
 
 const getApplicationStats = async (req, res) => {
     try {
 
         const applications = await Application.find({
-            userId: req.user.userId
+            userId: req.user.userId,deletedAt: null
         });
 
         const stats = {
@@ -49,7 +101,7 @@ const getApplicationStats = async (req, res) => {
             "OA Cleared": 0,
             "Technical Interview": 0,
             "HR Interview": 0,
-            Offer: 0,
+            Offered: 0,
             Rejected: 0
         };
 
@@ -59,7 +111,7 @@ const getApplicationStats = async (req, res) => {
             "OA Cleared": [],
             "Technical Interview": [],
             "HR Interview": [],
-            Offer: [],
+            Offered: [],
             Rejected: []
         };
 
@@ -113,11 +165,20 @@ const updateApplicationStage = async (req, res) => {
                 message: "Not authorized"
             });
         }
+        if (application.currentStage === currentStage) {
+    return res.status(400).json({
+        success: false,
+        message: `Application is already at ${currentStage} stage`
+    });
+}
 
-        application.currentStage = currentStage;
+application.currentStage = currentStage;
 
-        await application.save();
+application.statusHistory.push({
+    status: currentStage
+});
 
+await application.save();
         res.status(200).json({
             success: true,
             data: application
@@ -146,6 +207,12 @@ const deleteApplication = async (req, res) => {
                 message: "Application not found"
             });
         }
+        if (application.deletedAt !== null) {
+    return res.status(400).json({
+        success: false,
+        message: "Application is already deleted"
+    });
+}
 
         if (application.userId !== req.user.userId) {
             return res.status(403).json({
@@ -154,7 +221,8 @@ const deleteApplication = async (req, res) => {
             });
         }
 
-        await application.deleteOne();
+        application.deletedAt = new Date();
+        await application.save();
 
         res.status(200).json({
             success: true,

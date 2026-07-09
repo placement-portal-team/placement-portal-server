@@ -18,7 +18,10 @@ router.post("/prepare", protect, async (req, res) => {
       });
     }
 
-    const application = await Application.findById(applicationId);
+   const application = await Application.findOne({
+  _id: applicationId,
+  deletedAt: null,
+   });
 
     if (!application) {
       return res.status(404).json({
@@ -54,6 +57,7 @@ router.post("/prepare", protect, async (req, res) => {
       promptVersion: result.promptVersion,
       generatedAt: result.generatedAt,
     });
+    
 
     return res.status(201).json({
       success: true,
@@ -74,7 +78,10 @@ router.get("/history/:applicationId", protect, async (req, res) => {
   try {
     const { applicationId } = req.params;
 
-    const application = await Application.findById(applicationId);
+    const application = await Application.findOne({
+      _id: applicationId,
+      deletedAt: null,
+    });
     if (!application) {
       return res.status(404).json({ success: false, message: "Application not found" });
     }
