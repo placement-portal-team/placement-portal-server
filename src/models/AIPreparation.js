@@ -6,34 +6,82 @@ const aiPreparationSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
+
     applicationId: {
       type: String,
       required: true,
     },
+
     companyName: {
       type: String,
       required: true,
     },
+
     role: {
       type: String,
       required: true,
     },
+
+    mode: {
+      type: String,
+      enum: ["stage", "full"],
+      required: true,
+      default: "stage",
+    },
+
+    agentType: {
+      type: String,
+      enum: ["roadmap", "oa", "technical", "hr", "full"],
+      required: true,
+    },
+
+    stage: {
+      type: String,
+      default: null,
+    },
+
+    usedFallback: {
+      type: mongoose.Schema.Types.Mixed,
+      default: false,
+    },
+
     technicalQuestions: {
       type: Array,
       default: [],
     },
+
     hrQuestions: {
       type: Array,
       default: [],
     },
+
     studyRoadmap: {
       type: Object,
       default: {},
     },
+
+    oaPreparation: {
+      practiceQuestions: {
+        type: Array,
+        default: [],
+      },
+
+      focusTopics: {
+        type: Array,
+        default: [],
+      },
+
+      oaStrategy: {
+        type: Array,
+        default: [],
+      },
+    },
+
     promptVersion: {
       type: String,
-      default: "v1.3",
+      default: "v1.4",
     },
+
     generatedAt: {
       type: Date,
       default: Date.now,
@@ -44,4 +92,7 @@ const aiPreparationSchema = new mongoose.Schema(
   }
 );
 
-module.exports = mongoose.model("AIPreparation", aiPreparationSchema);
+module.exports = mongoose.model(
+  "AIPreparation",
+  aiPreparationSchema
+);
