@@ -7,7 +7,7 @@ const { hrPrompt } = require('../prompts/hrAgent');
 const { roadmapPrompt } = require('../prompts/roadmapAgent');
 const { oaPrompt } = require('../prompts/oaAgent');
 
-const PROMPT_VERSION = 'v1.4';
+const PROMPT_VERSION = 'v1.6';
 
 class GeminiService {
   constructor() {
@@ -316,38 +316,38 @@ class GeminiService {
 
   // Validate agent response schema
   _validateSchema(parsed, type) {
-    if (type === 'technical') {
-      if (
-        !parsed.questions ||
-        !Array.isArray(parsed.questions)
-      ) {
-        throw new Error(
-          'Technical agent: missing questions array'
-        );
-      }
+   if (type === 'technical') {
+  if (!Array.isArray(parsed.technicalQuestions)) {
+    throw new Error(
+      'Technical agent: missing technicalQuestions array'
+    );
+  }
 
-      parsed.questions.forEach(question => {
-        if (
-          !question.question ||
-          !question.difficulty
-        ) {
-          throw new Error(
-            'Technical agent: missing required fields'
-          );
-        }
-      });
-    }
+  if (!Array.isArray(parsed.focusTopics)) {
+    throw new Error(
+      'Technical agent: missing focusTopics array'
+    );
+  }
 
-    if (type === 'hr') {
-      if (
-        !parsed.questions ||
-        !Array.isArray(parsed.questions)
-      ) {
-        throw new Error(
-          'HR agent: missing questions array'
-        );
-      }
-    }
+  if (!Array.isArray(parsed.interviewStrategy)) {
+    throw new Error(
+      'Technical agent: missing interviewStrategy array'
+    );
+  }
+}
+   if (type === 'hr') {
+  if (!Array.isArray(parsed.questions)) {
+    throw new Error(
+      'HR agent: missing questions array'
+    );
+  }
+
+  if (!Array.isArray(parsed.hrStrategy)) {
+    throw new Error(
+      'HR agent: missing hrStrategy array'
+    );
+  }
+}
 
     if (type === 'roadmap') {
       if (
@@ -396,236 +396,367 @@ class GeminiService {
 
   // Generate preparation based on application stage
   async generateStagePrep({
-    role,
-    company,
-    jobDescription,
-    skills,
-    resumeText,
-    currentStage
-  }) {
-    const userSkills = skills || [];
-    const resume = resumeText || '';
+  role,
+  company,
+  jobDescription,
+  skills,
+  resumeText,
+  currentStage,
+  eventContext
+}) {
+  const userSkills = skills || [];
+  const resume = resumeText || '';
 
-    switch (currentStage) {
-      case 'Applied': {
-        const result =
-          await this._callWithFallback(
-            roadmapPrompt(
-              role,
-              userSkills,
-              jobDescription,
-              resume
-            ),
-            'roadmap'
-          );
-
-        return {
-          agentType: 'roadmap',
-          stage: currentStage,
-          usedFallback: result.usedFallback,
-          studyRoadmap: result.data.roadmap
-        };
-      }
-
-      case 'OA Scheduled': {
-        const result =
-          await this._callWithFallback(
-            oaPrompt(
-              role,
-              company,
-              jobDescription,
-              userSkills,
-              resume
-            ),
-            'oa'
-          );
-
-        return {
-          agentType: 'oa',
-          stage: currentStage,
-          usedFallback: result.usedFallback,
-          practiceQuestions:
-            result.data.practiceQuestions,
-          focusTopics: result.data.focusTopics,
-          oaStrategy: result.data.oaStrategy,
-          promptVersion: PROMPT_VERSION,
-          generatedAt: new Date()
-        };
-      }
-
-      case 'OA Cleared':
-      case 'Technical Interview': {
-        const result =
-          await this._callWithFallback(
-            technicalPrompt(
-              role,
-              company,
-              jobDescription,
-              userSkills,
-              resume
-            ),
-            'technical'
-          );
-
-        return {
-          agentType: 'technical',
-          stage: currentStage,
-          usedFallback: result.usedFallback,
-          technicalQuestions:
-            result.data.questions,
-            promptVersion: PROMPT_VERSION,
-            generatedAt: new Date()
-        };
-      }
-
-      case 'HR Interview': {
-        const result =
-          await this._callWithFallback(
-            hrPrompt(
-              role,
-              company,
-              resume
-            ),
-            'hr'
-          );
-
-        return {
-          agentType: 'hr',
-          stage: currentStage,
-          usedFallback: result.usedFallback,
-          hrQuestions: result.data.questions,
-          promptVersion: PROMPT_VERSION,
-          generatedAt: new Date()
-        };
-      }
-
-      case 'Rejected':
-      case 'Offered': {
-        const result =
-          await this._callWithFallback(
-            roadmapPrompt(
-              role,
-              userSkills,
-              jobDescription,
-              resume
-            ),
-            'roadmap'
-          );
-
-        return {
-          agentType: 'roadmap',
-          stage: currentStage,
-          usedFallback: result.usedFallback,
-          studyRoadmap: result.data.roadmap,
-          promptVersion: PROMPT_VERSION,
-          generatedAt: new Date()
-        };
-      }
-
-      default:
-        throw new Error(
-          `Unsupported application stage: ${currentStage}`
-        );
-    }
-  }
-
-  // Generate complete preparation using all agents
-  async generateFullPrep({
-    role,
-    company,
-    jobDescription,
-    skills,
-    resumeText
-  }) {
-    const userSkills = skills || [];
-    const resume = resumeText || '';
-
-    const [technical, hr, roadmap, oa] =
-      await Promise.all([
-        this._callWithFallback(
-          technicalPrompt(
-            role,
-            company,
-            jobDescription,
-            userSkills,
-            resume
-          ),
-          'technical'
-        ),
-
-        this._callWithFallback(
-          hrPrompt(
-            role,
-            company,
-            resume
-          ),
-          'hr'
-        ),
-
-        this._callWithFallback(
+  switch (currentStage) {
+    case 'Applied': {
+      const result =
+        await this._callWithFallback(
           roadmapPrompt(
             role,
             userSkills,
             jobDescription,
-            resume
+            resume,
+            eventContext
           ),
           'roadmap'
-        ),
+        );
 
-        this._callWithFallback(
+      return {
+        agentType: 'roadmap',
+        stage: currentStage,
+        usedFallback: result.usedFallback,
+
+        studyRoadmap:
+          result.data.roadmap || {},
+
+        urgencyBucket:
+          eventContext.urgencyBucket,
+
+        promptVersion: PROMPT_VERSION,
+        generatedAt: new Date()
+      };
+    }
+
+    case 'OA Scheduled': {
+      const result =
+        await this._callWithFallback(
           oaPrompt(
             role,
             company,
             jobDescription,
             userSkills,
-            resume
+            resume,
+            eventContext
           ),
           'oa'
-        )
-      ]);
+        );
 
-    return {
-      agentType: 'full',
+      return {
+        agentType: 'oa',
+        stage: currentStage,
+        usedFallback: result.usedFallback,
 
-      usedFallback: {
-        technical: technical.usedFallback,
-        hr: hr.usedFallback,
-        roadmap: roadmap.usedFallback,
-        oa: oa.usedFallback
-      },
-
-      technicalQuestions:
-        technical.data.questions,
-
-      hrQuestions:
-        hr.data.questions,
-
-      studyRoadmap:
-        roadmap.data.roadmap,
-
-      oaPreparation: {
         practiceQuestions:
-          oa.data.practiceQuestions,
+          result.data.practiceQuestions || [],
+
         focusTopics:
-          oa.data.focusTopics,
+          result.data.focusTopics || [],
+
         oaStrategy:
-          oa.data.oaStrategy
-      },
-      promptVersion: PROMPT_VERSION,
-      generatedAt: new Date()
-    };
+          result.data.oaStrategy || [],
+
+        urgencyBucket:
+          eventContext.urgencyBucket,
+
+        promptVersion: PROMPT_VERSION,
+        generatedAt: new Date()
+      };
+    }
+
+    case 'OA Cleared':
+    case 'Technical Interview': {
+      const result =
+        await this._callWithFallback(
+          technicalPrompt(
+            role,
+            company,
+            jobDescription,
+            userSkills,
+            resume,
+            eventContext
+          ),
+          'technical'
+        );
+
+      return {
+        agentType: 'technical',
+        stage: currentStage,
+        usedFallback: result.usedFallback,
+
+        technicalQuestions:
+          result.data.technicalQuestions || [],
+
+        technicalFocusTopics:
+          result.data.focusTopics || [],
+
+        interviewStrategy:
+          result.data.interviewStrategy || [],
+
+        urgencyBucket:
+          eventContext.urgencyBucket,
+
+        promptVersion: PROMPT_VERSION,
+        generatedAt: new Date()
+      };
+    }
+
+    case 'HR Interview': {
+      const result =
+        await this._callWithFallback(
+          hrPrompt(
+            role,
+            company,
+            jobDescription,
+            resume,
+            eventContext
+          ),
+          'hr'
+        );
+
+      return {
+        agentType: 'hr',
+        stage: currentStage,
+        usedFallback: result.usedFallback,
+
+        hrQuestions:
+          result.data.questions || [],
+
+        hrStrategy:
+          result.data.hrStrategy || [],
+
+        urgencyBucket:
+          eventContext.urgencyBucket,
+
+        promptVersion: PROMPT_VERSION,
+        generatedAt: new Date()
+      };
+    }
+
+    case 'Rejected':
+    case 'Offered': {
+      const result =
+        await this._callWithFallback(
+          roadmapPrompt(
+            role,
+            userSkills,
+            jobDescription,
+            resume,
+            eventContext
+          ),
+          'roadmap'
+        );
+
+      return {
+        agentType: 'roadmap',
+        stage: currentStage,
+        usedFallback: result.usedFallback,
+
+        studyRoadmap:
+          result.data.roadmap || {},
+
+        urgencyBucket:
+          eventContext.urgencyBucket,
+
+        promptVersion: PROMPT_VERSION,
+        generatedAt: new Date()
+      };
+    }
+
+    default:
+      throw new Error(
+        `Unsupported application stage: ${currentStage}`
+      );
+  }
+}
+
+  // Generate complete preparation using all agents
+ async generateFullPrep({
+  role,
+  company,
+  jobDescription,
+  skills,
+  resumeText,
+  eventContext
+}) {
+  const userSkills = skills || [];
+  const resume = resumeText || '';
+
+  const [technical, hr, roadmap, oa] =
+    await Promise.all([
+      this._callWithFallback(
+        technicalPrompt(
+          role,
+          company,
+          jobDescription,
+          userSkills,
+          resume,
+          eventContext
+        ),
+        'technical'
+      ),
+
+      this._callWithFallback(
+        hrPrompt(
+          role,
+          company,
+          jobDescription,
+          resume,
+          eventContext
+        ),
+        'hr'
+      ),
+
+      this._callWithFallback(
+        roadmapPrompt(
+          role,
+          userSkills,
+          jobDescription,
+          resume,
+          eventContext
+        ),
+        'roadmap'
+      ),
+
+      this._callWithFallback(
+        oaPrompt(
+          role,
+          company,
+          jobDescription,
+          userSkills,
+          resume,
+          eventContext
+        ),
+        'oa'
+      )
+    ]);
+
+  return {
+    agentType: 'full',
+
+    usedFallback: {
+      technical: technical.usedFallback,
+      hr: hr.usedFallback,
+      roadmap: roadmap.usedFallback,
+      oa: oa.usedFallback
+    },
+
+    urgencyBucket:
+      eventContext.urgencyBucket,
+
+    technicalQuestions:
+      technical.data.technicalQuestions || [],
+
+    technicalFocusTopics:
+      technical.data.focusTopics || [],
+
+    interviewStrategy:
+      technical.data.interviewStrategy || [],
+
+    hrQuestions:
+      hr.data.questions || [],
+
+    hrStrategy:
+      hr.data.hrStrategy || [],
+
+    studyRoadmap:
+      roadmap.data.roadmap || {},
+
+    oaPreparation: {
+      practiceQuestions:
+        oa.data.practiceQuestions || [],
+
+      focusTopics:
+        oa.data.focusTopics || [],
+
+      oaStrategy:
+        oa.data.oaStrategy || []
+    },
+
+    promptVersion: PROMPT_VERSION,
+    generatedAt: new Date()
+  };
+}
+  getUrgencyBucket(nextEventDate) {
+  if (!nextEventDate) {
+    return "none";
   }
 
+  const eventDate = new Date(nextEventDate);
+  const currentDate = new Date();
+
+  const difference =
+    eventDate.getTime() - currentDate.getTime();
+
+  const daysRemaining = Math.ceil(
+    difference / (1000 * 60 * 60 * 24)
+  );
+
+  if (daysRemaining <= 1) {
+    return "crash";
+  }
+
+  if (daysRemaining <= 3) {
+    return "compressed";
+  }
+
+  if (daysRemaining <= 7) {
+    return "focused";
+  }
+
+  if (daysRemaining <= 14) {
+    return "broad";
+  }
+
+  return "normal";
+}
+
   // Main AI orchestration method
-  async generatePrep({
-    role,
-    company,
-    jobDescription,
-    skills,
-    resumeText,
-    currentStage,
-    mode = 'stage'
-  }) {
+async generatePrep({
+  role,
+  company,
+  jobDescription,
+  skills,
+  resumeText,
+  currentStage,
+  nextEventType,
+  nextEventDate,
+  mode = 'stage'
+}) {
+  let daysRemaining = null;
+
+if (nextEventDate) {
+  const eventDate = new Date(nextEventDate);
+  const currentDate = new Date();
+
+  const difference =
+    eventDate.getTime() - currentDate.getTime();
+
+  daysRemaining = Math.ceil(
+    difference / (1000 * 60 * 60 * 24)
+  );
+}
+
+const urgencyBucket =
+  this.getUrgencyBucket(nextEventDate);
+
+const eventContext = {
+  nextEventType: nextEventType || null,
+  nextEventDate: nextEventDate || null,
+  daysRemaining,
+  urgencyBucket
+};
+
+
     if (
       !role ||
       !company ||
@@ -642,7 +773,8 @@ class GeminiService {
         company,
         jobDescription,
         skills,
-        resumeText
+        resumeText,
+        eventContext
       });
     }
 
@@ -659,7 +791,8 @@ class GeminiService {
         jobDescription,
         skills,
         resumeText,
-        currentStage
+        currentStage,
+        eventContext
       });
     }
 
@@ -667,6 +800,9 @@ class GeminiService {
       `Unsupported preparation mode: ${mode}`
     );
   }
+  getPromptVersion() {
+  return PROMPT_VERSION;
+}
 
   isStale(savedPromptVersion) {
     return savedPromptVersion !== PROMPT_VERSION;

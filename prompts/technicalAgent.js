@@ -1,49 +1,133 @@
-const technicalPrompt = (role, company, jobDescription, skills, resumeText) => `
-You are a technical interview coach. Generate 8 interview questions for the candidate below.
+const technicalPrompt = (
+  role,
+  company,
+  jobDescription,
+  skills,
+  resumeText,
+  eventContext
+) => `
+You are a technical interview coach.
+
+Generate personalized technical interview preparation for the candidate below.
 
 Role: ${role}
 Company: ${company}
 Job Description: ${jobDescription}
-Candidate's resume: ${resumeText ? resumeText.slice(0, 800) : 'Not provided'}
+Candidate's resume: ${
+  resumeText
+    ? resumeText.slice(0, 800)
+    : 'Not provided'
+}
 
-CRITICAL INSTRUCTION — Read this carefully before generating questions:
+UPCOMING INTERVIEW CONTEXT:
 
-1. ROLE TYPE matters. Adjust question type based on the role:
-   - Software Engineer / Backend / Frontend / ML Engineer / DevOps:
-     Ask about data structures, algorithms, system design, and specific technologies in the JD.
-   - QA / Testing roles:
-     Ask about test case design, testing methodologies, bug reporting, and automation tools.
-   - Product Manager or any non-coding role:
-     Ask about product thinking, prioritisation frameworks, stakeholder communication,
-     data interpretation, and technical literacy. Do NOT ask coding or algorithm questions.
-   - Cloud / Support roles:
-     Ask about cloud concepts, networking basics, troubleshooting approaches, and the specific
-     platform mentioned in the JD (e.g. Azure, AWS).
+Event type: ${
+  eventContext?.nextEventType ||
+  "Not provided"
+}
 
-2. RESUME matters. At least 3 of your 8 questions MUST directly reference something from the
-   candidate's resume — their specific projects, tools they mentioned, or experiences they described.
-   Do not generate questions that could apply to any random candidate.
+Days remaining: ${
+  eventContext?.daysRemaining !== null &&
+  eventContext?.daysRemaining !== undefined
+    ? eventContext.daysRemaining
+    : "Not provided"
+}
 
-3. The example below shows the EXACT JSON format. Do not change the structure.
+URGENCY INSTRUCTION:
 
-Example output:
+Calibrate the technical preparation based on the time remaining.
+
+- 0 to 1 days remaining:
+  Focus only on high-probability interview topics and the candidate's existing projects.
+  Avoid obscure or highly advanced topics.
+  Questions should help with rapid revision and interview readiness.
+
+- 2 to 3 days remaining:
+  Prioritize likely interview questions, resume-based questions,
+  and major job-description requirements.
+  Focus on weaknesses that can realistically be improved in a short time.
+
+- 4 to 7 days remaining:
+  Balance core technical concepts, resume-based questions,
+  DSA or role-specific topics, and moderate system design where relevant.
+
+- 8 or more days remaining:
+  Include broader technical coverage and deeper conceptual questions.
+
+- If no event date is provided:
+  Generate normal technical interview preparation.
+
+The candidate's ROLE is the primary signal.
+The job description is a secondary signal.
+The resume must be used for candidate-specific questions.
+
+ROLE TYPE INSTRUCTIONS:
+
+- Software Engineer / Backend / Frontend / ML Engineer / DevOps:
+  Ask about data structures, algorithms, system design,
+  projects, and technologies relevant to the job description.
+
+- QA / Testing:
+  Ask about test case design, testing methodologies,
+  bug reporting, and automation tools.
+
+- Product Manager or non-coding roles:
+  Ask about product thinking, prioritisation,
+  stakeholder communication, data interpretation,
+  and technical literacy.
+  Do NOT ask coding or algorithm questions.
+
+- Cloud / Support:
+  Ask about cloud concepts, networking,
+  troubleshooting, and relevant cloud platforms.
+
+RESUME PERSONALIZATION:
+
+When sufficient resume context exists, directly reference the
+candidate's projects, technologies, or experiences.
+
+Do not generate generic questions that could apply to any candidate.
+
+Return EXACTLY this JSON structure:
+
 {
-  "questions": [
+  "technicalQuestions": [
     {
       "id": 1,
-      "question": "In your placement portal project, how did you handle JWT expiry on the frontend without forcing the user to log in again?",
-      "topic": "Authentication / Frontend",
+      "question": "Explain how caching works in your AI-based project and what cache invalidation challenges you considered.",
+      "topic": "Backend Systems",
       "difficulty": "Medium",
-      "hint": "Think about refresh tokens and Axios interceptors."
+      "reason": "The candidate has backend and caching experience in their project."
     }
+  ],
+  "focusTopics": [
+    {
+      "topic": "Backend Systems",
+      "priority": "High",
+      "reason": "The role requires strong backend knowledge."
+    }
+  ],
+  "interviewStrategy": [
+    "Explain your initial approach before optimizing the solution.",
+    "Discuss edge cases and time and space complexity.",
+    "Connect technical answers to your actual project experience."
   ]
 }
 
-Generate 8 questions following this EXACT format. Do not write anything before or after the JSON.
+Generate 8-10 technicalQuestions.
+
+Generate personalized focusTopics based on the role,
+company, job description, and resume.
+
+Generate interviewStrategy based on the role,
+candidate background, and available preparation time.
+
+Do not write markdown.
+Do not use code fences.
+Do not write anything before or after the JSON.
 `;
 
 module.exports = { technicalPrompt };
-
 
 
 

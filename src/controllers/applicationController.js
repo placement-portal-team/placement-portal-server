@@ -1,4 +1,5 @@
 const Application=require("../models/applications");
+const mongoose = require("mongoose");
 
 
 const createApplication = async (req, res) => {
@@ -481,7 +482,37 @@ const updateApplicationStage = async (req, res) => {
     try {
 
         const { id } = req.params;
+ 
         const { currentStage } = req.body;
+               const validStages = [
+  "Applied",
+  "OA Scheduled",
+  "OA Cleared",
+  "Technical Interview",
+  "HR Interview",
+  "Offered",
+  "Rejected",
+];
+
+if (!currentStage) {
+  return res.status(400).json({
+    success: false,
+    message: "currentStage is required",
+  });
+}
+
+if (!validStages.includes(currentStage)) {
+  return res.status(400).json({
+    success: false,
+    message: "Invalid application stage",
+  });
+}
+        if (!mongoose.Types.ObjectId.isValid(id)) {
+  return res.status(400).json({
+    success: false,
+    message: "Invalid application ID",
+  });
+}
 
         const application = await Application.findById(id);
 
@@ -532,6 +563,13 @@ const deleteApplication = async (req, res) => {
 
         const { id } = req.params;
 
+        if (!mongoose.Types.ObjectId.isValid(id)) {
+  return res.status(400).json({
+    success: false,
+    message: "Invalid application ID",
+  });
+}
+
         const application = await Application.findById(id);
 
         if (!application) {
@@ -571,7 +609,214 @@ const deleteApplication = async (req, res) => {
 
     }
 };
+const updateApplicationEvent = async (req, res) => {
+    try {
+        const { id } = req.params;
+        if (!mongoose.Types.ObjectId.isValid(id)) {
+  return res.status(400).json({
+    success: false,
+    message: "Invalid application ID",
+  });
+}
+
+        const {
+            nextEventType,
+            nextEventDate
+        } = req.body;
+
+       if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid application ID",
+      });
+    }
+
+    if (!nextEventType || !nextEventDate) {
+      return res.status(400).json({
+        success: false,
+        message:
+          "nextEventType and nextEventDate are required",
+      });
+    }
+
+    const parsedEventDate = new Date(nextEventDate);
+
+    if (Number.isNaN(parsedEventDate.getTime())) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid event date",
+      });
+    }
+
+    const application = await Application.findOne({
+      _id: id,
+      userId: req.user.userId,
+      deletedAt: null,
+    });
+
+    if (!application) {
+      return res.status(404).json({
+        success: false,
+        message: "Application not found",
+      });
+    }
+
+    application.nextEventType = nextEventType.trim();
+    application.nextEventDate = parsedEventDate;
+
+    await application.save();
+
+    return res.status(200).json({
+      success: true,
+      message: "Upcoming event updated successfully",
+      data: application,
+    });
+  } catch (error) {
+    console.error(
+      "[Update Upcoming Event Error]",
+      error.message
+    );
+
+    return res.status(500).json({
+      success: false,
+      message: "Failed to update upcoming event",
+    });
+  }
+};
+const getApplicationDetails=async (req, res) => {
+  try {
+    const { id } = req.params;
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+  return res.status(400).json({
+    success: false,
+    message: "Invalid application ID",
+  });
+}
+
+    const application = await Application.findOne({
+      _id: id,
+      userId: req.user.userId,
+      deletedAt: null,
+    });
+
+    if (!application) {
+      return res.status(404).json({
+        success: false,
+        message: "Application not found",
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      data: application,
+    });
+  } catch (error) {
+    console.error(
+      "[Get Application Error]",
+      error.message
+    );
+
+    return res.status(500).json({
+      success: false,
+      message: "Failed to fetch application",
+    });
+  }
+}
+const updateApplicationDetails = async (req, res) => {
+  try {
+    const { id } = req.params;
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+  return res.status(400).json({
+    success: false,
+    message: "Invalid application ID",
+  });
+}
+
+    const allowedFields = [
+      "companyName",
+      "role",
+      "source",
+      "jobDescription",
+      "notes",
+    ];
+
+    const updates = {};
+
+    allowedFields.forEach((field) => {
+      if (req.body[field] !== undefined) {
+        updates[field] = req.body[field];
+      }
+    });
+    const validSources = [
+  "oncampus",
+  "linkedin",
+  "indeed",
+  "glassdoor",
+  "referral",
+  "companywebsite","whatsapp","instagram","telegram",
+  "other",
+];
+
+if (updates.source) {
+  updates.source = updates.source
+    .trim()
+    .toLowerCase();
+
+  if (!validSources.includes(updates.source)) {
+    return res.status(400).json({
+      success: false,
+      message: "Invalid application source",
+    });
+  }
+}
+
+    if (Object.keys(updates).length === 0) {
+      return res.status(400).json({
+        success: false,
+        message: "No valid fields provided for update",
+      });
+    }
+
+    const application = await Application.findOneAndUpdate(
+      {
+        _id: id,
+        userId: req.user.userId,
+        deletedAt: null,
+      },
+      {
+        $set: updates,
+      },
+      {
+        new: true,
+        runValidators: true,
+      }
+    );
+
+    if (!application) {
+      return res.status(404).json({
+        success: false,
+        message: "Application not found",
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: "Application details updated successfully",
+      data: application,
+    });
+  } catch (error) {
+    console.error(
+      "[Update Application Details Error]",
+      error.message
+    );
+
+    return res.status(500).json({
+      success: false,
+      message: "Failed to update application details",
+    });
+  }
+};
 
 module.exports = {
-    getApplication,createApplication,updateApplicationStage,getApplicationStats,deleteApplication,getApplicationAnalytics,
+    getApplication,createApplication,updateApplicationStage,getApplicationStats,deleteApplication,getApplicationAnalytics,updateApplicationEvent,getApplicationDetails,updateApplicationDetails,
 };

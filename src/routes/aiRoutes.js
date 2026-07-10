@@ -1,6 +1,7 @@
 const express = require("express");
 const protect = require("../middleware/authMiddleware");
 const router = express.Router();
+const mongoose = require("mongoose");
 
 const Application = require("../models/applications");
 const AIPreparation = require("../models/AIPreparation");
@@ -10,7 +11,9 @@ const Resume = require("../models/Resume");
 
 router.post("/prepare", protect, async (req, res) => {
   try {
-    const {applicationId,mode = "stage"} = req.body;
+    const {applicationId,mode = "stage",regenerate = false} = req.body;
+  
+
     const resume = await Resume.findOne({
        userId: req.user.userId
     });
@@ -21,6 +24,13 @@ router.post("/prepare", protect, async (req, res) => {
         message: "applicationId is required",
       });
     }
+    if (!mongoose.Types.ObjectId.isValid(applicationId)) {
+  return res.status(400).json({
+    success: false,
+    message: "Invalid application ID",
+  });
+}
+   
 
     if (!["stage", "full"].includes(mode)) {
       return res.status(400).json({
@@ -58,22 +68,58 @@ router.post("/prepare", protect, async (req, res) => {
           "Job description is required for AI preparation",
       });
     }
+    const currentPromptVersion =
+  geminiService.getPromptVersion();
+  const currentUrgencyBucket =
+  geminiService.getUrgencyBucket(
+    application.nextEventDate
+  );
 
-    const result = await geminiService.generatePrep({
-      role: application.role,
-      company: application.companyName,
-      jobDescription: application.jobDescription,
-      skills: [],
-       resumeText: resume?.extractedText || "",
-      currentStage: application.currentStage,
-      mode,
+const cacheQuery = {
+  userId: req.user.userId,
+  applicationId: application._id,
+  mode,
+  promptVersion: currentPromptVersion,
+  urgencyBucket: currentUrgencyBucket
+};
+
+if (mode === "stage") {
+  cacheQuery.stage = application.currentStage;
+}
+
+if (!regenerate) {
+  const cachedPreparation =
+    await AIPreparation.findOne(cacheQuery)
+      .sort({ createdAt: -1 });
+
+  if (cachedPreparation) {
+    return res.status(200).json({
+      success: true,
+      message: "Cached AI preparation returned",
+      cached: true,
+      data: cachedPreparation
     });
+  }
+}
+
+   const result = await geminiService.generatePrep({
+  role: application.role,
+  company: application.companyName,
+  jobDescription: application.jobDescription,
+  skills: [],
+  resumeText: resume?.extractedText || "",
+  currentStage: application.currentStage,
+  nextEventType: application.nextEventType,
+  nextEventDate: application.nextEventDate,
+  mode,
+});
 
     const saved = await AIPreparation.create({
       userId: req.user.userId,
       applicationId: application._id,
       companyName: application.companyName,
       role: application.role,
+      urgencyBucket: result.urgencyBucket,
 
       mode,
       agentType: result.agentType,
@@ -84,11 +130,20 @@ router.post("/prepare", protect, async (req, res) => {
 
       usedFallback: result.usedFallback,
 
-      technicalQuestions:
-        result.technicalQuestions || [],
+     technicalQuestions:
+       result.technicalQuestions || [],
 
-      hrQuestions:
-        result.hrQuestions || [],
+   technicalFocusTopics:
+      result.technicalFocusTopics || [],
+
+    interviewStrategy:
+       result.interviewStrategy || [],
+
+    hrQuestions:
+       result.hrQuestions || [],
+
+    hrStrategy:
+       result.hrStrategy || [],
 
       studyRoadmap:
         result.studyRoadmap || {},
@@ -120,6 +175,7 @@ router.post("/prepare", protect, async (req, res) => {
         mode === "stage"
           ? `${result.agentType} preparation generated for ${application.currentStage} stage`
           : "Complete AI preparation generated successfully",
+          cached:false,
       data: saved,
     });
   } catch (error) {

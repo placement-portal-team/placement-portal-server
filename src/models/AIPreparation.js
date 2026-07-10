@@ -49,11 +49,25 @@ const aiPreparationSchema = new mongoose.Schema(
       type: Array,
       default: [],
     },
+    technicalFocusTopics: {
+  type: Array,
+  default: []
+},
+
+interviewStrategy: {
+  type: Array,
+  default: []
+},
+
 
     hrQuestions: {
       type: Array,
       default: [],
     },
+    hrStrategy: {
+  type: Array,
+  default: []
+},
 
     studyRoadmap: {
       type: Object,
@@ -75,7 +89,22 @@ const aiPreparationSchema = new mongoose.Schema(
         type: Array,
         default: [],
       },
+    
     },
+      urgencyBucket: {
+  type: String,
+  enum: [
+    "crash",
+    "compressed",
+    "focused",
+    "broad",
+    "normal",
+    "none"
+  ],
+  default: "none"
+},
+
+
 
     promptVersion: {
       type: String,

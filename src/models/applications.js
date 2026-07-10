@@ -19,11 +19,21 @@ const applicationSchema = new mongoose.Schema(
       trim: true,
     },
 
-    source: {
-      type: String,
-      required: true,
-      trim: true,
-    },
+  source: {
+  type: String,
+  required: true,
+  trim: true,
+  lowercase: true,
+  enum: [
+    "oncampus",
+    "linkedin",
+    "indeed",
+    "glassdoor",
+    "referral",
+    "companywebsite","whatsapp","instagram","telegram",
+    "other",
+  ],
+},
 
     currentStage: {
       type: String,
@@ -61,6 +71,16 @@ const applicationSchema = new mongoose.Schema(
     },
   },
 ],
+nextEventType: {
+  type: String,
+  trim: true,
+  default: null,
+},
+
+nextEventDate: {
+  type: Date,
+  default: null,
+},
 
     appliedDate: {
       type: Date,
