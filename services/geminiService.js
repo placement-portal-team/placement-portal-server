@@ -1,5 +1,8 @@
 require('dotenv').config();
 
+console.log("Gemini key exists:", !!process.env.GEMINI_API_KEY);
+console.log("Gemini key prefix:", process.env.GEMINI_API_KEY?.slice(0, 6));
+
 const { GoogleGenerativeAI } = require('@google/generative-ai');
 
 const { technicalPrompt } = require('../prompts/technicalAgent');
@@ -22,7 +25,7 @@ class GeminiService {
     );
 
     this.model = this.genAI.getGenerativeModel({
-      model: 'gemini-3.5-flash'
+      model: 'gemini-2.5-flash'
     });
   }
 
