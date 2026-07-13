@@ -106,3 +106,416 @@ Generation is based on:
 | File Upload | Multer |
 | Resume Parsing | pdf-parse |
 | Deployment | Render |
+
+---
+
+# 🏗️ Backend Architecture
+
+The backend follows a modular layered architecture to ensure scalability, maintainability, and separation of concerns.
+
+```
+                    Client (React)
+
+                           │
+
+                           ▼
+
+                Express Route Layer
+
+                           │
+
+                           ▼
+
+                  Controller Layer
+
+                           │
+
+          ┌────────────────┴────────────────┐
+          │                                 │
+          ▼                                 ▼
+    Business Logic                    AI Services
+
+          │                                 │
+
+          ▼                                 ▼
+
+     MongoDB Models                 Gemini AI Agents
+
+          │                                 │
+
+          └──────────────┬──────────────────┘
+                         │
+
+                         ▼
+
+                    MongoDB Atlas
+```
+
+### Architecture Highlights
+
+- Modular MVC Architecture
+- RESTful API Design
+- JWT Protected Routes
+- AI Service Layer
+- MongoDB using Mongoose ODM
+- Prompt-based AI Generation
+- Resume Processing Pipeline
+- Centralized Error Handling
+
+---
+
+# 📂 Project Structure
+
+```
+src
+│
+├── config
+│   └── db.js
+│
+├── controllers
+│   ├── applicationController.js
+│   ├── authController.js
+│   ├── aiController.js
+│   └── resumeController.js
+│
+├── middleware
+│   ├── authMiddleware.js
+│   └── uploadMiddleware.js
+│
+├── models
+│   ├── user.js
+│   ├── application.js
+│   ├── resume.js
+│   └── aiPreparation.js
+│
+├── prompts
+│   ├── roadmapAgent.js
+│   ├── oaAgent.js
+│   ├── technicalAgent.js
+│   └── hrAgent.js
+│
+├── routes
+│   ├── authRoutes.js
+│   ├── applicationRoutes.js
+│   ├── aiRoutes.js
+│   └── resumeRoutes.js
+│
+├── services
+│   └── geminiService.js
+│
+├── utils
+│
+├── app.js
+└── server.js
+```
+
+---
+
+# 🤖 AI Preparation Workflow
+
+The AI Preparation module follows a multi-agent architecture.
+
+```
+User selects an Application
+            │
+            ▼
+Fetch Resume + Job Description
+            │
+            ▼
+Determine Current Interview Stage
+            │
+            ▼
+Generate Prompt
+            │
+            ▼
+───────────────────────────────────────
+        Gemini AI Service
+───────────────────────────────────────
+            │
+            ├──────────────┐
+            │              │
+            ▼              ▼
+
+      OA Agent      Technical Agent
+
+            │              │
+            └──────┬───────┘
+                   ▼
+
+              HR Agent
+
+                   │
+                   ▼
+
+          Roadmap Agent
+
+                   │
+                   ▼
+
+      Merge AI Responses
+
+                   │
+                   ▼
+
+     Save into MongoDB Cache
+
+                   │
+                   ▼
+
+     Return Response to Client
+```
+
+---
+
+# ⚡ AI Optimization Strategy
+
+To reduce unnecessary API calls and improve response time, the backend implements multiple optimization techniques.
+
+### Prompt Versioning
+
+Every AI response is associated with a prompt version.
+
+Whenever prompts are updated, cached responses become invalid automatically.
+
+---
+
+### Intelligent Caching
+
+Generated interview preparation is cached in MongoDB.
+
+If the same application requests AI preparation again without significant changes, cached content is returned instead of generating a new response.
+
+---
+
+### Retry Mechanism
+
+Each AI request is automatically retried before reporting failure.
+
+This helps recover from temporary API/network failures.
+
+---
+
+### Fallback Responses
+
+If AI generation fails after retries, predefined fallback preparation content is returned, ensuring the application remains functional even when the AI service is unavailable.
+
+---
+
+### Force Regeneration
+
+Users can bypass cached AI content and generate fresh interview preparation whenever required.
+---
+
+# 🔐 Authentication Flow
+
+PlaceMentor uses **JWT (JSON Web Token)** based authentication to secure all protected endpoints.
+
+### Authentication Workflow
+
+```text
+User Login/Register
+        │
+        ▼
+Validate Credentials
+        │
+        ▼
+Generate JWT Token
+        │
+        ▼
+Return Token to Client
+        │
+        ▼
+Store Token (Frontend)
+        │
+        ▼
+Authorization Header
+
+Bearer <JWT_TOKEN>
+
+        │
+        ▼
+Authentication Middleware
+        │
+        ▼
+Protected Route Access
+```
+
+### Protected Routes
+
+The following endpoints require authentication:
+
+- Applications API
+- Resume API
+- AI Preparation API
+- Analytics API
+- Profile API
+
+---
+
+# 🗄️ Database Design
+
+The backend uses **MongoDB Atlas** with **Mongoose ODM**.
+
+### User
+
+Stores user authentication and profile information.
+
+| Field | Description |
+|--------|-------------|
+| name | Full Name |
+| email | Unique Email |
+| password | Encrypted Password |
+
+---
+
+### Application
+
+Tracks each job application.
+
+| Field | Description |
+|--------|-------------|
+| companyName | Company Name |
+| role | Applied Role |
+| source | LinkedIn / Referral / Careers |
+| currentStage | Current Interview Stage |
+| statusHistory | Complete Stage Timeline |
+| nextEventDate | Upcoming Interview Date |
+| nextEventType | OA / Technical / HR |
+| jobDescription | Complete JD |
+| notes | User Notes |
+
+---
+
+### Resume
+
+Stores uploaded resume metadata and extracted content.
+
+| Field | Description |
+|--------|-------------|
+| originalName | Uploaded PDF Name |
+| extractedText | Parsed Resume Content |
+| uploadedAt | Upload Timestamp |
+
+---
+
+### AI Preparation
+
+Stores generated interview preparation.
+
+| Field | Description |
+|--------|-------------|
+| applicationId | Associated Job Application |
+| mode | Stage / Full |
+| agentType | Roadmap / OA / Technical / HR |
+| promptVersion | AI Prompt Version |
+| studyRoadmap | Generated Roadmap |
+| technicalQuestions | Technical Interview Questions |
+| hrQuestions | HR Questions |
+| oaPreparation | Online Assessment Preparation |
+| interviewStrategy | AI Strategy |
+| generatedAt | Generation Timestamp |
+
+---
+
+# 📡 REST API Documentation
+
+## Authentication
+
+| Method | Endpoint | Description |
+|---------|----------|-------------|
+| POST | `/api/auth/register` | Register User |
+| POST | `/api/auth/login` | Login User |
+| GET | `/api/auth/profile` | Get User Profile |
+| PUT | `/api/auth/profile` | Update Profile |
+| PATCH | `/api/auth/change-password` | Change Password |
+
+---
+
+## Applications
+
+| Method | Endpoint |
+|---------|----------|
+| GET | `/api/applications` |
+| POST | `/api/applications` |
+| GET | `/api/applications/:id` |
+| PATCH | `/api/applications/:id` |
+| PATCH | `/api/applications/:id/stage` |
+| PATCH | `/api/applications/:id/event` |
+| DELETE | `/api/applications/:id` |
+| GET | `/api/applications/stats` |
+| GET | `/api/applications/analytics` |
+
+---
+
+## AI Preparation
+
+| Method | Endpoint |
+|---------|----------|
+| POST | `/api/ai/prepare` |
+| GET | `/api/ai/history/:applicationId` |
+| GET | `/api/ai/history/:applicationId/all` |
+
+---
+
+## Resume
+
+| Method | Endpoint |
+|---------|----------|
+| POST | `/api/resume/upload` |
+| GET | `/api/resume` |
+| DELETE | `/api/resume` |
+
+---
+
+# 📨 Sample API Response
+
+```json
+{
+  "success": true,
+  "message": "Application created successfully",
+  "data": {
+    "_id": "...",
+    "companyName": "Oracle",
+    "role": "Software Development Engineer",
+    "currentStage": "Applied"
+  }
+}
+```
+
+---
+
+# ⚠️ Error Handling
+
+The backend follows a consistent response structure.
+
+### Success Response
+
+```json
+{
+  "success": true,
+  "message": "Operation completed successfully",
+  "data": {}
+}
+```
+
+### Error Response
+
+```json
+{
+  "success": false,
+  "message": "Detailed error message"
+}
+```
+
+---
+
+# 🔒 Security Features
+
+- JWT Authentication
+- Password Hashing using bcrypt
+- Protected Routes
+- CORS Configuration
+- Input Validation
+- Secure Environment Variables
+- MongoDB Injection Protection via Mongoose
+- Production-ready Deployment Configuration
