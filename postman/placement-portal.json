@@ -1,0 +1,110 @@
+{
+  "info": {
+    "_postman_id": "952f5d98-9c0b-42c1-b93c-160feaba9b33",
+    "name": "Placement Portal - Gemini AI",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "55393621",
+    "_collection_link": "https://go.postman.co/collection/55393621-952f5d98-9c0b-42c1-b93c-160feaba9b33?source=collection_link"
+  },
+  "item": [
+    {
+      "name": "Week 1 - AI Isolation Tests",
+      "item": []
+    },
+    {
+      "name": "New Request",
+      "request": {
+        "method": "GET",
+        "header": []
+      },
+      "response": []
+    },
+    {
+      "name": "Generate AI Prep",
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{ACCESS_TOKEN}",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"applicationId\": \"{{APPLICATION_ID}}\",\r\n  \"jdText\": \"Build scalable distributed systems using Go and Python. Experience with Kubernetes preferred.\",\r\n  \"resumeText\": \"Built a full-stack web app using React and Node.js. Won a hackathon. Interned at a startup.\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=AQ.Ab8RN6I2agHqCw8ZALhRt2DARd5exD-v2UKgZq04T8AUd_gwbw/api/v1/ai/prepare",
+          "protocol": "https",
+          "host": [
+            "generativelanguage",
+            "googleapis",
+            "com"
+          ],
+          "path": [
+            "v1beta",
+            "models",
+            "gemini-2.5-flash:generateContent"
+          ],
+          "query": [
+            {
+              "key": "key",
+              "value": "AQ.Ab8RN6I2agHqCw8ZALhRt2DARd5exD-v2UKgZq04T8AUd_gwbw/api/v1/ai/prepare"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Generate AI Prep",
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"applicationId\": \"{{APPLICATION_ID}}\",\r\n  \"jdText\": \"Build full stack applications using React and Node.js. 1-2 years experience preferred.\",\r\n  \"resumeText\": \"Built a placement portal as a college project using MERN stack. Completed NPTEL courses on DSA.\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:5000/api/ai/prepare",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "5000",
+          "path": [
+            "api",
+            "ai",
+            "prepare"
+          ]
+        }
+      },
+      "response": []
+    }
+  ]
+}

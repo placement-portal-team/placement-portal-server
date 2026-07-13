@@ -1,0 +1,41 @@
+{
+  "name": "placement-portal-server",
+  "version": "1.0.0",
+  "description": "Backend API built using Node.js, Express, MongoDB",
+  "main": "index.js",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "nodemon src/server.js",
+    "test": "jest --forceExit"
+  },
+  "jest": {
+    "testEnvironment": "node"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/placement-portal-team/placement-portal-server.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/placement-portal-team/placement-portal-server/issues"
+  },
+  "homepage": "https://github.com/placement-portal-team/placement-portal-server#readme",
+  "dependencies": {
+    "@google/generative-ai": "^0.24.1",
+    "axios": "^1.18.0",
+    "bcryptjs": "^3.0.3",
+    "cors": "^2.8.6",
+    "dotenv": "^17.4.2",
+    "express": "^5.2.1",
+    "jsonwebtoken": "^9.0.3",
+    "mongoose": "^9.6.3",
+    "multer": "^2.2.0",
+    "nodemon": "^3.1.14",
+    "pdf-parse": "^2.4.5"
+  },
+  "devDependencies": {
+    "jest": "^30.4.2"
+  }
+}

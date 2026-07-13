@@ -1,0 +1,107 @@
+const mongoose = require("mongoose");
+
+const applicationSchema = new mongoose.Schema(
+  {
+    userId: {
+      type: String,
+      required: true,
+    },
+
+    companyName: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+
+    role: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+
+  source: {
+  type: String,
+  required: true,
+  trim: true,
+  lowercase: true,
+  enum: [
+    "oncampus",
+    "linkedin",
+    "indeed",
+    "glassdoor",
+    "referral",
+    "companywebsite","whatsapp","instagram","telegram",
+    "other",
+  ],
+},
+
+    currentStage: {
+      type: String,
+      required: true,
+      enum: [
+        "Applied",
+        "OA Scheduled",
+        "OA Cleared",
+        "Technical Interview",
+        "HR Interview",
+        "Offered",
+        "Rejected",
+      ],
+      default: "Applied",
+    },
+    statusHistory: [
+  {
+    status: {
+      type: String,
+      required: true,
+      enum: [
+        "Applied",
+        "OA Scheduled",
+        "OA Cleared",
+        "Technical Interview",
+        "HR Interview",
+        "Offered",
+        "Rejected",
+      ],
+    },
+
+    changedAt: {
+      type: Date,
+      default: Date.now,
+    },
+  },
+],
+nextEventType: {
+  type: String,
+  trim: true,
+  default: null,
+},
+
+nextEventDate: {
+  type: Date,
+  default: null,
+},
+
+    appliedDate: {
+      type: Date,
+      default: Date.now,
+    },
+
+    jobDescription: {
+      type: String,
+    },
+
+    notes: {
+      type: String,
+    },
+    deletedAt: {
+  type: Date,
+  default: null,
+},
+  },
+  {
+    timestamps: true,
+  }
+);
+
+module.exports = mongoose.model("Application", applicationSchema);
