@@ -6,7 +6,7 @@ const mongoose = require("mongoose");
 const Application = require("../models/applications");
 const AIPreparation = require("../models/AIPreparation");
 const geminiService = require("../../services/geminiService");
-const Resume = require("../models/Resume");
+const Resume = require("../models/resume");
 
 
 router.post("/prepare", protect, async (req, res) => {
