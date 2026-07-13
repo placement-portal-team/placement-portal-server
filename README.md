@@ -15,9 +15,6 @@ Production-ready REST API built with **Node.js, Express.js, MongoDB Atlas and Go
 
 </div>
 
----
-# 🚀 PlaceMentor Backend
-
 <div align="center">
 
 ### AI-Powered Placement Tracker & Interview Preparation Platform
