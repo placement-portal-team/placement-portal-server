@@ -166,16 +166,57 @@ class GeminiService {
       "Treat this like a real interview discussion rather than simply describing the project."
   }
 ],
-    technicalFocusTopics: [
-      "Data Structures & Algorithms",
-      "Object Oriented Programming",
-      "Operating Systems",
-      "Database Management Systems",
-      "Computer Networks",
-      "System Design Fundamentals",
-      "SQL & NoSQL Databases",
-      "Projects & Debugging"
-    ],
+    focusTopics: [
+  {
+    topic: "Data Structures & Algorithms",
+    priority: "High",
+    reason:
+      "Revise common interview patterns including arrays, strings, linked lists, trees, graphs, and dynamic programming, as they form the foundation of most coding interviews."
+  },
+  {
+    topic: "Object-Oriented Programming",
+    priority: "High",
+    reason:
+      "Be comfortable explaining OOP principles, design patterns, and practical examples demonstrating encapsulation, inheritance, polymorphism, and abstraction."
+  },
+  {
+    topic: "Database Management Systems",
+    priority: "High",
+    reason:
+      "Review SQL queries, normalization, indexing, transactions, ACID properties, and query optimization techniques commonly discussed in technical interviews."
+  },
+  {
+    topic: "Operating Systems",
+    priority: "Medium",
+    reason:
+      "Understand processes, threads, synchronization, deadlocks, scheduling algorithms, and virtual memory concepts with practical examples."
+  },
+  {
+    topic: "Computer Networks",
+    priority: "Medium",
+    reason:
+      "Revise networking fundamentals including TCP/IP, HTTP/HTTPS, DNS, REST APIs, and the client-server communication model."
+  },
+  {
+    topic: "System Design Fundamentals",
+    priority: "Medium",
+    reason:
+      "Build a conceptual understanding of scalability, caching, database design, load balancing, and high-level architecture for backend systems."
+  },
+  {
+    topic: "Backend Development",
+    priority: "Medium",
+    reason:
+      "Strengthen concepts related to authentication, authorization, REST APIs, middleware, and secure backend application development."
+  },
+  {
+    topic: "Projects & Debugging",
+    priority: "High",
+    reason:
+      "Be prepared to explain your projects in depth, justify architectural decisions, discuss debugging approaches, and describe the technical challenges you solved."
+  }
+],
+
 
    interviewStrategy: [
   "Begin every coding question by confirming your understanding of the problem statement. Clarify assumptions whenever the requirements are ambiguous before writing any code.",
