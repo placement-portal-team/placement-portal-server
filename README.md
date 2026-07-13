@@ -659,7 +659,7 @@ git push origin feature/feature-name
 
 # 👨‍💻 Author
 
-**Rathna Sujith Reddy**
+**Rathna Sujith Reddy** ❤️
 
 Final Year Computer Science Student
 
