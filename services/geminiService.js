@@ -117,71 +117,131 @@ class GeminiService {
 
   // Fallback content
   _fallbackContent(type) {
-    if (type === 'technical') {
-      return {
-        questions: [
-          {
-            id: 1,
-            question:
-              "Walk me through a technical project you've built from scratch.",
-            topic: 'General',
-            difficulty: 'Easy',
-            hint:
-              'Focus on your architecture decisions and the challenges you solved.'
-          },
-          {
-            id: 2,
-            question:
-              'How would you design a URL shortening service like bit.ly?',
-            topic: 'System Design',
-            difficulty: 'Medium',
-            hint:
-              'Think about the data model, hashing strategy, and scale.'
-          },
-          {
-            id: 3,
-            question:
-              'Explain the difference between SQL and NoSQL databases. When would you choose each?',
-            topic: 'Databases',
-            difficulty: 'Medium',
-            hint:
-              'Consider structure, scalability, and consistency requirements.'
-          }
-        ]
-      };
-    }
+   if (type === "technical") {
+  return {
+   technicalQuestions: [
+  {
+    id: 1,
+    question:
+      "Given an array of integers, find the longest consecutive sequence in O(n) time complexity.",
+    topic: "Data Structures & Algorithms",
+    difficulty: "Medium",
+    hint:
+      "Think about using a HashSet to achieve linear time complexity."
+  },
+  {
+    id: 2,
+    question:
+      "Design an LRU Cache supporting get() and put() operations in O(1) time.",
+    topic: "Data Structures & Algorithms",
+    difficulty: "Hard",
+    hint:
+      "Combine a HashMap with a Doubly Linked List to maintain constant-time operations."
+  },
+  {
+    id: 3,
+    question:
+      "Explain the differences between SQL and NoSQL databases. When would you choose one over the other?",
+    topic: "Database Management Systems",
+    difficulty: "Medium",
+    hint:
+      "Compare schema design, scalability, consistency, and common use cases."
+  },
+  {
+    id: 4,
+    question:
+      "Explain how JWT authentication works in a full-stack web application.",
+    topic: "Backend Development",
+    difficulty: "Medium",
+    hint:
+      "Discuss token generation, verification, expiration, and secure storage."
+  },
+  {
+    id: 5,
+    question:
+      "Walk me through a challenging project you've built and explain the key technical decisions you made.",
+    topic: "Projects",
+    difficulty: "Medium",
+    hint:
+      "Focus on the problem statement, architecture, implementation challenges, and the final outcome."
+  }
+],
+    technicalFocusTopics: [
+      "Data Structures & Algorithms",
+      "Object Oriented Programming",
+      "Operating Systems",
+      "Database Management Systems",
+      "Computer Networks",
+      "System Design Fundamentals",
+      "SQL & NoSQL Databases",
+      "Projects & Debugging"
+    ],
 
-    if (type === 'hr') {
-      return {
-        questions: [
-          {
-            id: 1,
-            question:
-              'Tell me about a time you had to debug a difficult problem under pressure.',
-            category: 'Behavioural',
-            starTip:
-              'STAR: Describe the bug, deadline, debugging process, and outcome.'
-          },
-          {
-            id: 2,
-            question:
-              'Describe a situation where you had to learn a new technology quickly.',
-            category: 'Situational',
-            starTip:
-              'Explain what you learned, why it was urgent, your approach, and the result.'
-          },
-          {
-            id: 3,
-            question:
-              "Tell me about a time you disagreed with a teammate's technical decision.",
-            category: 'Behavioural',
-            starTip:
-              'Focus on respectful communication and how you reached a resolution.'
-          }
-        ]
-      };
-    }
+    interviewStrategy: [
+      "Understand the problem completely before proposing a solution.",
+      "Explain your thought process while solving coding questions.",
+      "Discuss time and space complexity before finalizing your answer.",
+      "Use examples to justify design decisions whenever possible.",
+      "Communicate clearly with the interviewer and ask clarifying questions.",
+      "Validate your solution using edge cases before concluding."
+    ]
+  };
+}
 
+   if (type === "hr") {
+  return {
+    hrQuestions: [
+      {
+        id: 1,
+        question: "Tell me about yourself.",
+        category: "Introduction",
+        starTip:
+          "Provide a concise overview covering your education, projects, technical skills, and career goals."
+      },
+      {
+        id: 2,
+        question:
+          "Describe a challenging situation you faced while working on a project.",
+        category: "Behavioural",
+        starTip:
+          "Use the STAR method to explain the challenge, your actions, and the outcome."
+      },
+      {
+        id: 3,
+        question:
+          "Tell me about a time you worked effectively in a team.",
+        category: "Teamwork",
+        starTip:
+          "Highlight communication, collaboration, and your individual contribution."
+      },
+      {
+        id: 4,
+        question:
+          "How do you handle tight deadlines or pressure?",
+        category: "Situational",
+        starTip:
+          "Explain prioritization, planning, and maintaining quality under pressure."
+      },
+      {
+        id: 5,
+        question:
+          "Why do you want to work with our company?",
+        category: "Company Fit",
+        starTip:
+          "Connect your career goals with the company's products, culture, and growth opportunities."
+      }
+    ],
+
+    hrStrategy: [
+      "Use the STAR framework for behavioural questions.",
+      "Support your answers with real project experiences.",
+      "Maintain confidence while keeping answers concise.",
+      "Research the company's products and recent developments before the interview.",
+      "Demonstrate enthusiasm, willingness to learn, and a growth mindset.",
+      "End the interview with thoughtful questions about the role or team."
+    ]
+  };
+}
     if (type === 'oa') {
       return {
         practiceQuestions: [
