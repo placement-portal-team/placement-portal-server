@@ -1,3 +1,21 @@
+<div align="center">
+
+# 🚀 PlaceMentor Backend
+
+### AI-Powered Placement Tracker & Interview Preparation Platform
+
+Production-ready REST API built with **Node.js, Express.js, MongoDB Atlas and Google's Gemini AI**
+
+[![Node.js](https://img.shields.io/badge/Node.js-22.x-339933?logo=node.js&logoColor=white)]()
+[![Express](https://img.shields.io/badge/Express.js-5.x-black?logo=express)]()
+[![MongoDB](https://img.shields.io/badge/MongoDB-Atlas-47A248?logo=mongodb&logoColor=white)]()
+[![JWT](https://img.shields.io/badge/Auth-JWT-blue)]()
+[![Gemini](https://img.shields.io/badge/AI-Gemini-orange)]()
+[![Render](https://img.shields.io/badge/Deploy-Render-5A67D8)]()
+
+</div>
+
+---
 # 🚀 PlaceMentor Backend
 
 <div align="center">
@@ -519,3 +537,154 @@ The backend follows a consistent response structure.
 - Secure Environment Variables
 - MongoDB Injection Protection via Mongoose
 - Production-ready Deployment Configuration
+---
+
+# 🚀 Deployment
+
+The backend is deployed on **Render** and connected to **MongoDB Atlas** for cloud database management.
+
+### Production Stack
+
+| Service | Platform |
+|----------|----------|
+| Backend API | Render |
+| Database | MongoDB Atlas |
+| AI Engine | Google Gemini API |
+| Frontend | Vercel |
+
+---
+
+# ⚙️ Environment Variables
+
+Create a `.env` file in the project root.
+
+```env
+PORT=5000
+
+MONGO_URL=your_mongodb_connection_string
+
+JWT_SECRET=your_jwt_secret
+
+GEMINI_API_KEY=your_gemini_api_key
+
+FRONTEND_URL=http://localhost:5173
+```
+
+> **Note:** Never commit your `.env` file. Use environment variables in production platforms such as Render.
+
+---
+
+# 💻 Local Setup
+
+Clone the repository
+
+```bash
+git clone https://github.com/placement-portal-team/placement-portal-server.git
+```
+
+Navigate to the project
+
+```bash
+cd placement-portal-server
+```
+
+Install dependencies
+
+```bash
+npm install
+```
+
+Create your `.env`
+
+```bash
+touch .env
+```
+
+Run the development server
+
+```bash
+npm run dev
+```
+
+Backend will start on
+
+```
+http://localhost:5000
+```
+
+---
+
+# 📈 Future Improvements
+
+The project has been designed with scalability in mind. Planned enhancements include:
+
+- Email Notifications for interview reminders
+- Calendar Integration (Google Calendar)
+- AI Resume Optimization
+- Company-specific Interview Experience Database
+- Role-based Access Control (Admin/User)
+- AI Feedback after Mock Interviews
+- Docker Containerization
+- CI/CD Pipeline using GitHub Actions
+- Unit & Integration Testing
+- Rate Limiting and API Monitoring
+
+---
+
+# 🤝 Contributing
+
+Contributions are welcome.
+
+If you'd like to improve the project:
+
+1. Fork the repository
+2. Create a new feature branch
+
+```bash
+git checkout -b feature/feature-name
+```
+
+3. Commit your changes
+
+```bash
+git commit -m "Add new feature"
+```
+
+4. Push the branch
+
+```bash
+git push origin feature/feature-name
+```
+
+5. Open a Pull Request
+
+---
+
+# 👨‍💻 Author
+
+**Rathna Sujith Reddy**
+
+Final Year Computer Science Student
+
+Indian Institute of Engineering Science and Technology (IIEST), Shibpur
+
+GitHub:
+https://github.com/sujithdnd29
+
+---
+
+# ⭐ Support
+
+If you found this project useful, consider giving it a ⭐ on GitHub.
+
+It helps others discover the project and motivates future improvements.
+
+---
+
+<div align="center">
+
+### Built with ❤️ using
+
+Node.js • Express.js • MongoDB Atlas • Gemini AI • JWT • Render
+
+</div>
