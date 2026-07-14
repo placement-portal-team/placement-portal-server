@@ -765,55 +765,55 @@ return {
   const userSkills = skills || [];
   const resume = resumeText || '';
 
-  const [technical, hr, roadmap, oa] =
-    await Promise.all([
-      this._callWithFallback(
-        technicalPrompt(
-          role,
-          company,
-          jobDescription,
-          userSkills,
-          resume,
-          eventContext
-        ),
-        'technical'
-      ),
+ // Generate Study Roadmap
+const roadmap = await this._callWithFallback(
+  roadmapPrompt(
+    role,
+    userSkills,
+    jobDescription,
+    resume,
+    eventContext
+  ),
+  "roadmap"
+);
 
-      this._callWithFallback(
-        hrPrompt(
-          role,
-          company,
-          jobDescription,
-          resume,
-          eventContext
-        ),
-        'hr'
-      ),
+// Generate Online Assessment Preparation
+const oa = await this._callWithFallback(
+  oaPrompt(
+    role,
+    company,
+    jobDescription,
+    userSkills,
+    resume,
+    eventContext
+  ),
+  "oa"
+);
 
-      this._callWithFallback(
-        roadmapPrompt(
-          role,
-          userSkills,
-          jobDescription,
-          resume,
-          eventContext
-        ),
-        'roadmap'
-      ),
+// Generate Technical Interview Preparation
+const technical = await this._callWithFallback(
+  technicalPrompt(
+    role,
+    company,
+    jobDescription,
+    userSkills,
+    resume,
+    eventContext
+  ),
+  "technical"
+);
 
-      this._callWithFallback(
-        oaPrompt(
-          role,
-          company,
-          jobDescription,
-          userSkills,
-          resume,
-          eventContext
-        ),
-        'oa'
-      )
-    ]);
-
+// Generate HR Interview Preparation
+const hr = await this._callWithFallback(
+  hrPrompt(
+    role,
+    company,
+    jobDescription,
+    resume,
+    eventContext
+  ),
+  "hr"
+);
   return {
     agentType: 'full',
 
